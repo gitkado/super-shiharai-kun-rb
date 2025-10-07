@@ -6,6 +6,11 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# Middleware classesを事前にロード
+# NOTE: Railsのinsert_beforeは文字列での遅延ロードに対応していないため、
+# Zeitwerkの自動リロードを一部犠牲にして明示的にrequireする必要がある
+require_relative "../app/middleware/request_trace_id"
+
 module SuperShiharaiKunRb
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -28,5 +33,14 @@ module SuperShiharaiKunRb
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # SemanticLoggerの設定
+    config.rails_semantic_logger.semantic = true
+    config.rails_semantic_logger.started = true
+    config.rails_semantic_logger.processing = true
+    config.rails_semantic_logger.rendered = true
+
+    # トレースIDミドルウェアの追加
+    config.middleware.insert_before Rails::Rack::Logger, RequestTraceId
   end
 end

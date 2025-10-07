@@ -58,6 +58,16 @@ Rails.application.configure do
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
 
+  # Development環境でもJSON形式でログ出力
+  config.semantic_logger.application = "super-shiharai-kun"
+
+  # rails_semantic_loggerのデフォルトappenderを無効化してJSON形式に統一
+  config.rails_semantic_logger.add_file_appender = false
+  config.semantic_logger.add_appender(
+    io: $stdout,
+    formatter: :json
+  )
+
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 
