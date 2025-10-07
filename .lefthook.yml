@@ -1,0 +1,22 @@
+pre-commit:
+  parallel: true
+  commands:
+    rubocop:
+      tags: backend
+      glob: "**/*.{rb,rake}"
+      run: bundle exec rubocop --force-exclusion
+    # rspec:
+    #   tags: test
+    #   run: bundle exec rspec --fail-fast
+
+pre-push:
+  commands:
+    brakeman:
+      tags: security
+      run: bundle exec brakeman -q --no-progress --no-pager
+    bundler-audit:
+      tags: security
+      run: bundle exec bundler-audit check --update
+    # rspec:
+    #   tags: test
+    #   run: bundle exec rspec
