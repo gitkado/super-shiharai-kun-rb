@@ -35,18 +35,25 @@ group :development, :test do
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
+  gem "bundler-audit", require: false
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
-  # omakase in: 
+  # gem "rubocop-rspec", require: false # RSpecの場合
+  # omakase in:
   # - gem "rubocop", require: false
   # - gem "rubocop-rails", require: false
   # - gem "rubocop-performance", require: false
 
-  gem "bundler-audit", require: false
+  # Testing framework
+  gem "rspec-rails", "~> 7.1"
+
+  # API Documentation with Swagger UI
+  # NOTE: Railsエンジンとして起動時に統合する必要があるため`require: false`は指定しない
+  gem "rswag-api"
+  gem "rswag-specs"  # RSpecからYAML生成
+  gem "rswag-ui"
+
   gem "lefthook", require: false
-  # gem "rubocop-rspec", require: false # RSpecの場合
   # gem "simplecov", require: false
 end
-
-
