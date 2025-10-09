@@ -1,37 +1,89 @@
-# Super Shiharai Kun
+# スーパー支払い君RB.com
 
-Rails 7.2 API application
+Ruby on Rails 7.2で構築した企業向け支払い管理システムのREST APIサービスです。
 
-## Architecture
+## クイックスタート
+
+### 前提条件
+- Ruby 3.4.6
+- Docker & Docker Compose
+
+### 開発環境起動（推奨）
+```bash
+# 1. PostgreSQL起動
+docker compose up -d
+
+# 2. 依存関係インストール
+bundle install
+
+# 3. データベース作成・マイグレーション
+rails db:create db:migrate
+
+# 4. アプリケーション起動
+rails s
+```
+
+### テスト実行
+```bash
+# 全テスト実行
+bundle exec rspec
+
+# 特定のスペックのみ実行
+bundle exec rspec spec/requests/hello_spec.rb
+```
+
+## プロジェクト概要
+
+企業向け支払い管理システムの機能：
+- ユーザー管理: 法人ユーザーの登録・JWT認証
+- 請求書管理: 請求書登録・一覧表示・手数料自動計算
+- 手数料計算: 支払金額の4% + 消費税10%
+
+## 技術スタック
+
+| 技術         | バージョン | 用途          |
+|------------|-------|-------------|
+| Ruby       | 3.4.6 | メイン言語       |
+| Rails      | 7.2.2 | Webフレームワーク  |
+| PostgreSQL | 16    | データベース      |
+| RSpec      | 7.1   | テストフレームワーク |
+| Puma       | -     | Webサーバー     |
+| Packwerk   | 3.2   | パッケージ管理     |
+
+## アーキテクチャ
 
 このプロジェクトは**モジュラーモノリス**アーキテクチャを採用しています。
 
-### モジュラーモノリスとは
-
 モジュラーモノリスは、単一のアプリケーション内でドメインごとにモジュール（パッケージ）を分離する設計手法です。マイクロサービスの利点（独立性、保守性）とモノリスの利点（シンプルさ、パフォーマンス）を両立します。
 
-### 主な特徴
-
-- **ドメイン駆動設計**: ビジネスドメインごとにパッケージを分割
-- **明確な依存関係**: Packwerkによる依存関係の可視化と強制
-- **段階的な分離**: 将来的なマイクロサービス化を見据えた設計
-- **テストの独立性**: パッケージ単位でのテストが可能
+詳細は [モジュラーモノリスアーキテクチャ](doc/modular_monolith.md) を参照してください。
 
 ### ディレクトリ構造
 
+#### 全体構造
+
 ```
 app/
-├── controllers/
-│   ├── application_controller.rb    # 全コントローラーの基底クラス
-│   └── concerns/                     # 共通コンサーン（最小限）
-├── models/
-│   └── concerns/                     # 共通モデルコンサーン
-└── packages/                         # ドメインパッケージ
+├── channels/                         # ActionCable（WebSocket）- 共通基盤のみ
+│   └── application_cable/
+├── controllers/                      # 共通基盤 - 基底クラスと技術的なconcernのみ
+│   ├── application_controller.rb    # 全パッケージの基底クラス
+│   └── concerns/                     # 全体で共有する技術的concern
+├── jobs/                             # 共通基盤 - 基底クラスのみ
+│   └── application_job.rb
+├── mailers/                          # 共通基盤 - 基底クラスのみ
+│   └── application_mailer.rb
+├── middleware/                       # Rackミドルウェア（全体に影響）
+│   └── request_trace_id.rb
+├── models/                           # 共通基盤 - 基底クラスと技術的なconcernのみ
+│   ├── application_record.rb        # 全パッケージの基底クラス
+│   └── concerns/                     # 全体で共有する技術的concern
+└── packages/                         # ビジネスロジック層（全てのドメイン機能）
     ├── hello/                        # Helloドメイン（サンプル）
     │   ├── package.yml               # パッケージ設定
     │   ├── app/
-    │   │   ├── controllers/
-    │   │   │   └── hello_controller.rb  # 非公開（内部実装）
+    │   │   ├── controllers/          # 非公開（内部実装）
+    │   │   │   └── hello_controller.rb
     │   │   └── public/               # 公開API（他パッケージから利用可能）
     │   │       └── .keep             # 最初は空でOK
     │   └── spec/
@@ -40,16 +92,34 @@ app/
     └── authentication/               # 認証ドメイン（計画中）
         ├── package.yml
         ├── app/
-        │   ├── controllers/
-        │   │   └── sessions_controller.rb  # 非公開
-        │   ├── models/
-        │   │   └── user.rb           # 非公開
-        │   ├── services/
-        │   │   └── authentication_service.rb  # 非公開
+        │   ├── controllers/          # 非公開
+        │   │   └── sessions_controller.rb
+        │   ├── models/               # 非公開（ビジネスロジックはここに）
+        │   │   └── user.rb
+        │   ├── jobs/                 # 非公開
+        │   │   └── user_notification_job.rb
         │   └── public/               # 公開API
         │       └── authenticatable.rb  # 他パッケージから利用可能なconcern
         └── spec/
 ```
+
+#### 重要な原則
+
+**app直下（共通基盤・インフラ層）:**
+- ✅ 基底クラス（Application*）
+- ✅ 全パッケージで共有する技術的な機能
+- ✅ Rackミドルウェア
+- ❌ ビジネスロジック → `app/packages/` へ
+
+**app/packages/（ビジネスロジック層）:**
+- ✅ 全てのドメイン固有のController, Model, Job, Mailer
+- ✅ ビジネスルール、機能実装
+- ✅ Railsの標準構成（MVC）に従う
+- ✅ Fat Model, Skinny Controller
+
+**公開APIの方針:**
+- デフォルトは全て非公開（packages内のapp/配下）
+- 他パッケージから利用されるものだけ `app/public/` に配置
 
 ### パッケージ間の依存関係
 
@@ -73,399 +143,157 @@ graph TD
 - **認証パッケージは他のドメインに依存してはいけない**（Packwerkが強制）
 - **循環依存は禁止**（Packwerkが検出）
 
-### 新しいパッケージの追加方法
+パッケージの追加方法や依存関係の管理については、[Packwerk使用ガイド](doc/packwerk_guide.md) を参照してください。
 
-1. **ディレクトリ構造を作成**
+## テスト戦略
 
-   ```bash
-   mkdir -p app/packages/your_domain/app/controllers
-   mkdir -p app/packages/your_domain/spec/requests
-   ```
-
-2. **package.ymlを作成**
-
-   ```yaml
-   # app/packages/your_domain/package.yml
-   enforce_dependencies: true
-   enforce_privacy: true
-
-   dependencies:
-     - "."                              # ルートパッケージ（ApplicationControllerなど）
-     - "app/packages/authentication"    # 認証が必要な場合のみ追加
-
-   # 公開APIのパス（デフォルト: app/public）
-   # 他パッケージに公開したいクラス/モジュールのみをここに配置
-   public_path: app/public
-   ```
-
-   **重要:**
-   - `public_path: app/public` がデフォルト（他パッケージからはこのパス内のみアクセス可能）
-   - `app/public/` 以外（controllers, models, services等）は全て非公開（private）
-   - 他パッケージに公開したいものだけを `app/public/` に配置する
-
-3. **コードを実装**
-
-   ```ruby
-   # app/packages/your_domain/app/controllers/your_controller.rb
-   class YourController < ApplicationController
-     include Authentication::Authenticatable  # 認証パッケージの公開APIを利用
-
-     def index
-       # 実装
-     end
-   end
-   ```
-
-   **公開APIが必要な場合:**
-
-   ```ruby
-   # app/packages/authentication/app/public/authenticatable.rb
-   # 他パッケージから利用可能なconcern
-   module Authentication
-     module Authenticatable
-       extend ActiveSupport::Concern
-
-       included do
-         before_action :authenticate_user!
-       end
-
-       private
-
-       def authenticate_user!
-         # 認証ロジック
-       end
-     end
-   end
-   ```
-
-4. **依存関係をチェック**
-
-   ```bash
-   bundle exec packwerk check
-   ```
-
-### Packwerk - 依存関係管理ツール
-
-[Packwerk](https://github.com/Shopify/packwerk)を使用してパッケージ間の依存関係を管理しています。
-
-#### 主な機能
-
-- **依存関係チェック**: 宣言されていない依存を検出
-- **循環依存の検出**: パッケージ間の循環参照を防止
-- **Privacy enforcement**: 公開API (`app/public/`) 以外への参照を検出
-- **設定の検証**: `package.yml`の妥当性チェック
-
-#### コマンド
-
+### RSpecによるテスト
 ```bash
-# 設定の検証
-bundle exec packwerk validate
-
-# 依存関係違反をチェック
-bundle exec packwerk check
-
-# 特定のファイルのみチェック
-bundle exec packwerk check app/packages/hello/
-```
-
-#### Git連携
-
-Lefthookにより、コミット時に自動的にPackwerkチェックが実行されます:
-
-```yaml
-# .lefthook.yml（抜粋）
-pre-commit:
-  parallel: true
-  commands:
-    packwerk-validate:
-      run: bundle exec packwerk validate
-    packwerk-check:
-      run: bundle exec packwerk check
-```
-
-### 設計原則
-
-1. **単一責任の原則**: 各パッケージは1つのドメインのみを担当
-2. **依存関係の明示**: `package.yml`で依存を宣言
-3. **公開APIの最小化**: 必要最小限のクラス/モジュールのみ `app/public/` に配置
-   - デフォルトは全て非公開（controllers, models, services等は他パッケージから参照不可）
-   - 他パッケージが利用するべきものだけを `app/public/` に配置
-   - 例: Adapter、DTO、Concern、Facade等
-4. **テストの独立性**: パッケージごとに完結したテストを記述
-
-### 将来の拡張性
-
-このアーキテクチャにより、以下が容易になります:
-
-- **新機能の追加**: 新しいパッケージとして独立して開発
-- **チーム分割**: パッケージ単位でチームを分けて並行開発
-- **マイクロサービス化**: 必要に応じてパッケージを別サービスに分離
-- **段階的なリファクタリング**: パッケージ単位で改善
-
-## Ruby version
-
-* Ruby 3.x
-
-## System dependencies
-
-* Docker
-* Docker Compose
-
-## Setup
-
-### Database
-
-PostgreSQLをDockerで起動:
-
-```bash
-docker-compose up -d
-```
-
-### Database creation
-
-```bash
-rails db:create
-```
-
-### Database initialization
-
-```bash
-rails db:migrate
-```
-
-## How to run the server
-
-```bash
-rails s
-```
-
-## API docs (RSwag)
-
-このプロジェクトでは、API仕様書の自動生成のために [RSwag](https://github.com/rswag/rswag) を使用しています。RSpecのリクエストスペックからSwagger/OpenAPI形式のドキュメントを生成することで、テストとドキュメントの同期を保ちます。
-
-### Swagger UIへのアクセス
-
-- Swagger UI: `http://localhost:3000/api-docs`
-- 定義ファイル: `swagger/v1/swagger.yaml`
-
-### 新しいAPIのドキュメント追加手順
-
-1. **RSpecリクエストスペックを作成**
-
-   `spec/requests/` 配下にrswag DSLを使ったテストを作成:
-
-   ```ruby
-   require 'swagger_helper'  # Swagger生成に必須
-
-   RSpec.describe 'Hello API', type: :request do
-     path '/hello_world' do  # → paths."/hello_world" (エンドポイント)
-       get 'Returns hello world message' do  # → get.summary (HTTPメソッドと説明)
-         tags 'Hello'  # → tags (Swagger UIでのグルーピング)
-         produces 'application/json'  # → responses.content (レスポンス形式)
-
-         response '200', 'successful' do  # → responses.'200'.description (ステータスコード)
-           schema type: :object,  # → schema (レスポンスのデータ構造)
-             properties: {
-               message: { type: :string, example: 'hello world' }
-             },
-             required: ['message']
-
-           run_test!  # 実際にAPIを呼び出してテスト実行（YAMLには影響しない）
-         end
-       end
-     end
-   end
-   ```
-
-   **DSLとYAMLの対応関係:**
-
-   | DSL | 生成されるYAML |
-   |-----|---------------|
-   | `path '/hello_world'` | `paths:"/hello_world"` |
-   | `get '説明'` | `get: summary: 説明` |
-   | `tags 'Hello'` | `tags: [Hello]` |
-   | `produces 'application/json'` | `content: application/json` |
-   | `response '200', '説明'` | `responses: '200': description: 説明` |
-   | `schema type: :object, properties: {...}` | `schema: type: object, properties: {...}` |
-   | `run_test!` | YAML生成には影響せず、実際のテスト実行のみ |
-
-2. **Swagger YAMLを生成**
-
-   ```bash
-   RAILS_ENV=test rake rswag:specs:swaggerize
-   ```
-
-3. **サーバーを再起動してSwagger UIで確認**
-
-   ```bash
-   rails s
-   ```
-
-   http://localhost:3000/api-docs にアクセス
-
-### テスト実行
-
-```bash
-# 全てのRSpecテストを実行
+# 全テスト実行
 bundle exec rspec
 
 # 特定のスペックのみ実行
 bundle exec rspec spec/requests/hello_spec.rb
 ```
 
-### 注意事項
+### テスト設計の原則
+- パッケージ単位でテストを記述
+- RSpecのリクエストスペックでAPI動作を検証
+- RSwagでテストと仕様書を同期
 
-- **通常のRSpecテストとrswag用テストは共存可能**：`swagger_helper` をrequireしたテストのみがSwagger生成対象
-- **テストとドキュメントが同期**：テストが通る = ドキュメントが正しい状態を保証
-- **手動でYAMLを編集することも可能**：ただし次回の生成時に上書きされるため非推奨
+## API仕様
 
-## ログ出力
+このプロジェクトでは、[RSwag](https://github.com/rswag/rswag)を使用してAPI仕様書を自動生成しています。
+
+- Swagger UI: http://localhost:3000/api-docs
+- 定義ファイル: `swagger/v1/swagger.yaml`
+
+詳細は [API仕様書ガイド](doc/api_documentation.md) を参照してください。
+
+## ログとトレーシング
 
 このプロジェクトでは、[SemanticLogger](https://github.com/rocketjob/semantic_logger)によるJSON形式の構造化ログを採用しています。
 
+- **JSON形式**: 全環境でJSON形式で出力
+- **トレースID**: 全リクエストに`trace_id`が自動付与され、横断的な追跡が可能
+- **モジュラー対応**: パッケージごとに独立したロガー
+
+詳細は [ログとトレーシング](doc/logging_tracing.md) を参照してください。
+
+## エラーハンドリング
+
+このプロジェクトでは、Spring BootのGlobal Error Adviceに相当するグローバルなエラーハンドリングを実装しています。
+
 ### 特徴
 
-- **JSON形式**: 全環境でJSON形式で出力（Datadog、CloudWatch等のログ集約ツールに対応）
-- **トレースID**: 全リクエストに`trace_id`が自動付与され、リクエストを横断した追跡が可能
-- **モジュラーモノリス対応**: モジュールごとに独立したロガーを持てる
+- **統一されたエラーレスポンス**: 全てのエラーを一貫したJSON形式で返却
+- **トレースID連携**: リクエストトレースIDをエラーレスポンスに含めることで、ログとの紐付けが可能
+- **カスタムエラー対応**: ビジネスロジック固有のエラーを簡単に定義可能
+- **単一責任の原則**: Concernとして分離し、保守性を向上
 
-### トレースIDの仕様
-
-- リクエストヘッダー`X-Trace-Id`で指定可能（マイクロサービス間の連携に有用）
-- 未指定の場合はUUIDを自動生成
-- レスポンスヘッダー`X-Trace-Id`で返却
-
-```bash
-# トレースIDを指定したリクエスト例
-curl -H "X-Trace-Id: custom-trace-123" http://localhost:3000/up
-```
-
-### ログの出力例
+### エラーレスポンス形式
 
 ```json
 {
-  "timestamp": "2025-10-07T13:09:06.459379Z",
-  "level": "info",
-  "application": "super-shiharai-kun",
-  "environment": "development",
-  "named_tags": {
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "Couldn't find User with 'id'=999",
     "trace_id": "682d608d-d8e7-45cc-abd8-a2b75d30c0bf"
-  },
-  "name": "Rack",
-  "message": "Started",
-  "payload": {
-    "method": "GET",
-    "path": "/up"
   }
 }
 ```
 
-## ヘルスチェック API
+### サポートされているエラー
 
+| 例外 | HTTPステータス | エラーコード |
+|------|--------------|------------|
+| `ActiveRecord::RecordNotFound` | 404 | `RESOURCE_NOT_FOUND` |
+| `ActiveRecord::RecordInvalid` | 422 | `VALIDATION_ERROR` |
+| `ActionController::ParameterMissing` | 400 | `BAD_REQUEST` |
+| `DomainError` | カスタマイズ可能 | カスタマイズ可能 |
+| `StandardError` | 500 | `INTERNAL_SERVER_ERROR` |
+
+詳細な使い方は [doc/error_handling.md](doc/error_handling.md) を参照してください。
+
+## 主要コマンド
+
+### 必須コマンド
+| コマンド              | 説明            |
+|-------------------|---------------|
+| `rails s`         | 開発サーバー起動      |
+| `bundle exec rspec` | テスト実行         |
+| `docker compose up -d` | PostgreSQL起動   |
+| `rails db:migrate` | DBマイグレーション実行 |
+
+### コード品質
+| コマンド                     | 説明          |
+|--------------------------|-------------|
+| `bundle exec rubocop -a` | コードスタイル自動修正 |
+| `bundle exec rubocop`    | スタイルチェックのみ  |
+| `bundle exec packwerk validate` | Packwerk設定検証 |
+| `bundle exec packwerk check` | 依存関係チェック    |
+| `bundle exec brakeman`   | セキュリティスキャン  |
+| `bundle exec bundler-audit check --update` | 依存gem脆弱性チェック |
+
+### Swagger生成
+| コマンド                     | 説明          |
+|--------------------------|-------------|
+| `RAILS_ENV=test rake rswag:specs:swaggerize` | Swagger YAML生成 |
+
+## 環境設定
+
+### データベース設定
+| 項目       | 値                              |
+|----------|--------------------------------|
+| Host     | localhost                      |
+| Port     | 5432                           |
+| User     | postgres                       |
+| Password | postgres                       |
+| Database | super_shiharai_kun_development |
+
+### PostgreSQL停止
+```bash
+docker compose down
+```
+
+### ヘルスチェックAPI
 - エンドポイント: `GET /up`
 - ハンドラ: Rails標準の `rails/health#show`
-- 挙動: アプリケーションが例外なく起動できれば HTTP 200、失敗した場合は 500 を返すため、ロードバランサや監視サービスが認証なしで稼働状況を確認できます。
-- 利用例:
-
-  ```bash
-  curl -if http://localhost:3000/up
-  ```
-
-  ステージングや本番環境では `localhost:3000` を適切なホスト名に置き換えて実行してください。
-
-## Database configuration
-
-* Host: localhost
-* Port: 5432
-* User: postgres
-* Password: postgres
-* Database: super_shiharai_kun_development
-
-## Stop database
+- 挙動: アプリケーションが例外なく起動できれば HTTP 200、失敗した場合は 500 を返す
 
 ```bash
-docker-compose down
+curl -if http://localhost:3000/up
 ```
 
 ## 静的解析と品質チェック
 
-このプロジェクトでは、コード品質とセキュリティを保つために [Lefthook](https://github.com/evilmartians/lefthook) を使用した自動チェックを導入しています。
+このプロジェクトでは、[Lefthook](https://github.com/evilmartians/lefthook)を使用した自動チェックを導入しています。
 
-### 導入しているツール
+- **RuboCop**: コードスタイルと品質チェック
+- **Packwerk**: パッケージ間の依存関係チェック
+- **Brakeman**: セキュリティ脆弱性スキャン
+- **Bundler Audit**: 依存gemの脆弱性チェック
 
-- **RuboCop**: Rubyコードスタイルと品質チェック
-  - ベース設定: [rubocop-rails-omakase](https://github.com/rails/rubocop-rails-omakase)
-  - プラグイン: rubocop-rails, rubocop-performance, rubocop-rspec, rubocop-packs
-  - 注: rubocop-sorbetがrubocop-rails-omakaseの間接依存として含まれるが、型アノテーションは使用しないためSorbet copは`.rubocop.yml`で無効化している
-- **Brakeman**: セキュリティ脆弱性スキャナー
-- **Bundler Audit**: 依存gemの既知の脆弱性チェック
+詳細は [静的解析と品質チェック](doc/static_analysis.md) を参照してください。
 
-### フックタイミングと実行内容
+## 開発のポイント
 
-#### pre-commit（コミット前）
+### アーキテクチャ設計
+- モジュラーモノリス: パッケージ単位でドメインを分離
+- 依存関係の明示: Packwerkによる依存管理と強制
+- 公開APIの最小化: `app/public/` による明示的な公開
 
-以下のチェックが並列実行されます:
+### テスト設計
+- RSpec: リクエストスペックによるAPI動作検証
+- RSwag: テストと仕様書の同期
+- パッケージ単位: 独立したテストの記述
 
-```yaml
-rubocop:            # 変更されたRubyファイルのスタイルチェック
-packwerk-validate:  # Packwerk設定の検証
-packwerk-check:     # パッケージ間の依存関係チェック
-```
+### セキュリティ
+- エラーハンドリング: グローバルエラーハンドラーによる統一的な処理
+- バリデーション: Railsの標準バリデーション機構
+- 静的解析: Lefthook + RuboCop + Brakeman + Bundler Audit
 
-#### pre-push（プッシュ前）
-
-```yaml
-bundler-audit: # 依存関係の脆弱性チェック（最新の脆弱性DBに更新してチェック）
-```
-
-### 手動実行コマンド
-
-Gitフックを待たずに手動で実行することも可能です:
-
-```bash
-# RuboCop（自動修正あり）
-bundle exec rubocop -a
-
-# RuboCop（自動修正なし）
-bundle exec rubocop
-
-# Packwerk検証
-bundle exec packwerk validate
-
-# Packwerk依存関係チェック
-bundle exec packwerk check
-
-# Brakeman
-bundle exec brakeman
-
-# Bundler Audit
-bundle exec bundler-audit check --update
-```
-
-### Lefthookの管理コマンド
-
-```bash
-# フックのインストール
-bundle exec lefthook install
-
-# フックのアンインストール
-bundle exec lefthook uninstall
-
-# 特定のフックを手動実行
-bundle exec lefthook run pre-commit --verbose
-bundle exec lefthook run pre-push --verbose
-```
-
-### フックのスキップ
-
-緊急時にフックをスキップする場合:
-
-```bash
-# コミット時のフックをスキップ
-LEFTHOOK=0 git commit -m "message"
-
-# プッシュ時のフックをスキップ
-LEFTHOOK=0 git push
-```
-
-**注意**: セキュリティチェックをスキップする場合は、後で必ず手動実行してください。
+### ログとトレーシング
+- JSON形式ログ: SemanticLoggerによる構造化ログ
+- トレースID: リクエストごとの一意なIDで横断的な追跡が可能
+- モジュラー対応: パッケージごとに独立したロガー
