@@ -56,7 +56,7 @@ group :development, :test do
   # - gem "rubocop-performance", require: false
 
   # Testing framework
-  gem "rspec-rails", "~> 7.1"
+  gem "rspec-rails", "~> 8.0"
 
   # API Documentation with Swagger UI
   # NOTE: Railsエンジンとして起動時に統合する必要があるため`require: false`は指定しない
