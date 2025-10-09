@@ -29,6 +29,9 @@ module SuperShiharaiKunRb
       config.eager_load_paths << path
     end
 
+    # EagerLoadの対象からspecディレクトリを除外
+    config.eager_load_paths.reject! { |path| path.include?("/spec") }
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
