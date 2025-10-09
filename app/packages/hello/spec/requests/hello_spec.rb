@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "../../../../../spec/swagger_helper"
 
 RSpec.describe "Hello API", type: :request do

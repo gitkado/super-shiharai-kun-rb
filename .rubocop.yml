@@ -16,6 +16,12 @@ AllCops:
   Exclude:
     - 'tmp/cache/packwerk/**/*'
 
+# frozen_string_literal マジックコメントを強制
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+  SafeAutoCorrect: true
+
 # RSwagのDSLはRuboCopから空のexample groupとして見えるため無効化
 RSpec/EmptyExampleGroup:
   Enabled: false
