@@ -21,6 +21,12 @@ module SuperShiharaiKunRb
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Add packages to autoload paths for modular monolith architecture
+    Dir.glob(Rails.root.join("app/packages/*/app/*")).each do |path|
+      config.autoload_paths << path
+      config.eager_load_paths << path
+    end
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

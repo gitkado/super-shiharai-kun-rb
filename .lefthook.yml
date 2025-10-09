@@ -5,9 +5,16 @@ pre-commit:
       tags: backend
       glob: "**/*.{rb,rake}"
       run: bundle exec rubocop --force-exclusion
-    # rspec:
-    #   tags: test
-    #   run: bundle exec rspec --fail-fast
+    packwerk-validate:
+      tags: packwerk
+      run: bundle exec packwerk validate
+    packwerk-check:
+      tags: packwerk
+      glob: "**/*.rb"
+      run: bundle exec packwerk check
+    rspec:
+      tags: test
+      run: bundle exec rspec --fail-fast
 
 pre-push:
   commands:
@@ -17,6 +24,6 @@ pre-push:
     bundler-audit:
       tags: security
       run: bundle exec bundler-audit check --update
-    # rspec:
-    #   tags: test
-    #   run: bundle exec rspec
+    rspec:
+      tags: test
+      run: bundle exec rspec

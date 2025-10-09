@@ -1,0 +1,14 @@
+# Hello package - provides a simple example API endpoint.
+
+enforce_dependencies: true
+enforce_privacy: true
+
+# helloパッケージで他のパッケージを使う場合は明示
+# 今後 Authentication を利用する想定なら追加
+dependencies:
+  - "."  # ApplicationController など root への最小依存のみ
+
+# 公開APIのパス（デフォルト: app/public）
+# 他パッケージに公開したいクラス/モジュールのみをここに配置
+# hello は利用される側ではないため、最初は空で問題なし
+public_path: app/public

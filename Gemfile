@@ -32,6 +32,12 @@ gem "bootsnap", require: false
 # Structured logging with JSON format support
 gem "rails_semantic_logger"
 
+# Modular monolith architecture with Packwerk
+gem "packwerk", "~> 3.2"
+gem "packwerk-extensions", "~> 0.3.0"
+gem "packs-rails"  # Packs integration for Rails
+gem "ostruct"  # Required for Ruby >= 3.5 (not bundled by default)
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
@@ -42,7 +48,8 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
-  # gem "rubocop-rspec", require: false # RSpecの場合
+  gem "rubocop-rspec", require: false
+  gem "rubocop-packs", require: false  # Packwerk用RuboCop拡張
   # omakase in:
   # - gem "rubocop", require: false
   # - gem "rubocop-rails", require: false

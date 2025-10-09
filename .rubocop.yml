@@ -2,11 +2,70 @@ inherit_gem:
   rubocop-rails-omakase: rubocop.yml
 
 require:
+  - rubocop-packs
+
+plugins:
   - rubocop-rails
   - rubocop-performance
-  # - rubocop-rspec
+  - rubocop-rspec
 
 AllCops:
   NewCops: enable
   TargetRubyVersion: 3.4
   TargetRailsVersion: 7.2
+  Exclude:
+    - 'tmp/cache/packwerk/**/*'
+
+# RSwagのDSLはRuboCopから空のexample groupとして見えるため無効化
+RSpec/EmptyExampleGroup:
+  Enabled: false
+
+# モジュラーモノリス境界を強制するPackwerk cops
+Packs/ClassMethodsAsPublicApis:
+  Enabled: true
+
+Packs/DocumentedPublicApis:
+  Enabled: false  # ドキュメントの成熟度が上がったら有効化可能
+
+Packs/RootNamespaceIsPackName:
+  Enabled: true
+
+# NOTE: omakaseの間接依存でSorbetがinstallされているが利用していないのでSorbetのcopsは無効にしている
+Sorbet/FalseSigil:
+  Enabled: false
+
+Sorbet/HasSigil:
+  Enabled: false
+
+Sorbet/IgnoreSigil:
+  Enabled: false
+
+Sorbet/StrictSigil:
+  Enabled: false
+
+Sorbet/StrongSigil:
+  Enabled: false
+
+Sorbet/TrueSigil:
+  Enabled: false
+
+Sorbet/EnforceSingleSigil:
+  Enabled: false
+
+Sorbet/ForbidRBIOutsideOfAllowedPaths:
+  Enabled: false
+
+Sorbet/SignatureBuildOrder:
+  Enabled: false
+
+Sorbet/SingleLineRbiClassModuleDefinitions:
+  Enabled: false
+
+Sorbet/ForbidSig:
+  Enabled: false
+
+Sorbet/ForbidTUntyped:
+  Enabled: false
+
+Sorbet/EnforceSignatures:
+  Enabled: false
