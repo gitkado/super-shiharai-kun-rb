@@ -29,8 +29,9 @@ module SuperShiharaiKunRb
       config.eager_load_paths << path
     end
 
-    # EagerLoadの対象からspecディレクトリを除外
-    config.eager_load_paths.reject! { |path| path.include?("/spec") }
+    # Exclude spec directories from autoloading
+    Rails.autoloaders.main.ignore(Rails.root.join("app/packages/*/spec"))
+    Rails.autoloaders.main.ignore(Rails.root.join("spec"))
 
     # Configuration for the application, engines, and railties goes here.
     #
