@@ -249,7 +249,7 @@ Claudeのcommitterサブエージェントは、以下のルールに従って�
 - `doc/`, `README`, `CHANGELOG` → `docs`
 
 ### コミットメッセージの形式
-- **タイトル**: 50〜72文字以内、日本語で要約（Conventional Commits準拠）  
+- **タイトル**: 50〜72文字以内、日本語で要約（Conventional Commits準拠）
   - 例: `feat(pack-user): ユーザー認証APIを追加`
 - **本文**: 箇条書きで「Before / After / 影響 / リスク / rollback / 関連Issue」
   ```text
@@ -258,6 +258,10 @@ Claudeのcommitterサブエージェントは、以下のルールに従って�
   - 影響: ログインAPIへの依存
   - rollback: revert可、スキーマ変更なし
   - Related: #123
+  ```
+- **Co-Authored-By は不要**: Claude Code生成のコミットでも `Co-Authored-By: Claude` やその他の共同作成者トレーラーを含めない
+  - GitHubで「gitkado and Claude committed」と表示されることを避けるため
+  - コミットの作成者は常に `gitkado <gitkado@gmail.com>` のみ
 
 ## その他のコマンド
 
