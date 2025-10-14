@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bundle exec rspec --fail-fast || echo 'テスト失敗。Claudeに修正を依頼してください。'"
+          },
+          {
+            "type": "command",
+            "command": "bundle exec rubocop && bundle exec packwerk check && bundle exec brakeman -q"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "MAX_THINKKING_TOKENS": "31999"
+  },
+  "disabledMcpjsonServers": ["serena"]
+}
