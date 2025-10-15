@@ -1,0 +1,9 @@
+# frozen_string_literal: true
+
+enforce_dependencies: true
+enforce_privacy: true
+
+dependencies:
+  - "."  # ルートパッケージ（ApplicationControllerなど）
+
+public_path: app/public

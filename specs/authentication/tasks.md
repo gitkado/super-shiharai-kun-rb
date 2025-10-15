@@ -6,14 +6,14 @@
 
 ### フェーズ1: 基盤準備
 
-- [ ] **Gemfile に依存gem追加**
+- [x] **Gemfile に依存gem追加**
   ```ruby
   gem "rodauth-rails", "~> 1.15"
   gem "jwt", "~> 2.10"
   gem "bcrypt", "~> 3.1"
   ```
-- [ ] `bundle install` 実行
-- [ ] `app/packages/authentication/package.yml` 作成
+- [x] `bundle install` 実行
+- [x] `app/packages/authentication/package.yml` 作成
   ```yaml
   enforce_dependencies: true
   enforce_privacy: true
@@ -23,18 +23,21 @@
 
   public_path: app/public
   ```
-- [ ] **検証コマンド:**
+- [x] **検証コマンド:**
   ```bash
   bundle list | grep -E "(rodauth|jwt|bcrypt)"
   bundle exec packwerk validate
   ```
+  **実行結果 (2025-10-15):**
+  - bcrypt 3.1.20, jwt 2.10.2, rodauth 2.41.0, rodauth-model 0.4.0, rodauth-rails 1.15.2 インストール完了
+  - Packwerk validation successful
 - [ ] **コミット:** `chore(lockfile): 認証関連gemを追加`
 
 ---
 
 ### フェーズ2: Rodauth設定
 
-- [ ] **ディレクトリ作成**
+- [x] **ディレクトリ作成**
   ```bash
   mkdir -p app/packages/authentication/app/lib
   mkdir -p app/packages/authentication/app/controllers/authentication
@@ -42,58 +45,38 @@
   mkdir -p app/packages/authentication/app/public/authentication
   ```
 
-- [ ] **Rodauth設定クラス作成**
+- [x] **Rodauth設定クラス作成**
   - ファイル: `app/packages/authentication/app/lib/rodauth_app.rb`
-  - 内容:
-    ```ruby
-    class RodauthApp < Rodauth::Rails::App
-      configure do
-        enable :login, :create_account, :jwt
+  - **実装結果 (2025-10-15):**
+    - jwt_expiration パラメータは存在しないため削除
+    - Sequel::DATABASES を使用してActiveRecord接続を構成
+    - テーブル未作成時のスキーマチェックエラーは、フェーズ4のマイグレーション実行後に解消予定
 
-        jwt_secret ENV.fetch("JWT_SECRET_KEY")
-        jwt_expiration 3600  # 1時間
-
-        accounts_table :accounts
-        account_password_hash_column :password_hash
-        account_status_column :status
-
-        skip_status_checks? true  # メール確認スキップ
-      end
-    end
-    ```
-
-- [ ] **Rodauth初期化設定**
+- [x] **Rodauth初期化設定**
   - ファイル: `config/initializers/rodauth.rb`
-  - 内容:
-    ```ruby
-    require "rodauth/rails"
+  - **実装結果 (2025-10-15):**
+    - sequel-activerecord_connection の設定を追加
+    - after_initialize ブロックで遅延ロード
 
-    Rodauth::Rails.configure do |config|
-      config.app = "RodauthApp"
-    end
-    ```
+- [x] **環境変数設定**
+  - `.env.example` に追加: ✅
+  - `.env` ファイル作成（Git管理外）: ✅
+  - `.gitignore` に `.env.example` の例外を追加: ✅
+  - `dotenv-rails` gem を Gemfile に追加: ✅
 
-- [ ] **環境変数設定**
-  - `.env.example` に追加:
-    ```
-    JWT_SECRET_KEY=your-secret-key-here-change-in-production
-    ```
-  - ローカル環境用に `.env` ファイル作成（Git管理外）:
-    ```bash
-    echo "JWT_SECRET_KEY=$(openssl rand -hex 64)" > .env
-    ```
-
-- [ ] **検証コマンド:**
+- [x] **検証コマンド:**
   ```bash
-  # 環境変数が読み込まれるか確認
-  ruby -r dotenv -e "Dotenv.load; puts ENV['JWT_SECRET_KEY']"
-
   # Railsが起動できるか確認
   RAILS_ENV=test bin/rails runner "puts 'Rails loaded successfully'"
+  # ✅ 成功（deprecation警告あり）
   ```
+  **制約事項:**
+  - Rodauth設定はaccountsテーブル存在チェックを行うため、フェーズ4マイグレーション後に完全動作予定
+  - Lefthook pre-commit: RuboCop/Packwerk は成功、RSpec はテーブル未作成のため失敗（想定内）
 
 - [ ] **コミット:** `feat(pack-authentication): Rodauth設定を追加`
 - [ ] **コミット:** `chore(config): JWT環境変数を追加`
+- [ ] **コミット:** `chore(lockfile): dotenv-rails を追加`
 
 ---
 

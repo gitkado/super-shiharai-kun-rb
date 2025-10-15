@@ -19,6 +19,11 @@ gem "puma", ">= 5.0"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
+# Authentication with Rodauth and JWT
+gem "rodauth-rails", "~> 1.15"
+gem "jwt", "~> 2.10"
+gem "bcrypt", "~> 3.1"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
@@ -41,6 +46,9 @@ gem "packs-rails"  # Packs integration for Rails
 gem "ostruct"  # Required for Ruby >= 3.5 (not bundled by default)
 
 group :development, :test do
+  # Load environment variables from .env file
+  gem "dotenv-rails"
+
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
