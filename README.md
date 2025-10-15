@@ -158,19 +158,48 @@ graph TD
 
 ## テスト戦略
 
-### RSpecによるテスト
+本プロジェクトでは、**Rails API の外部仕様を最小限のリクエストスペックで保証し、  
+ビジネスロジックはユニットスペックで厚く検証する**方針を採用します。  
+ブラウザ操作を伴う System テストは対象外とします。
+
+### テスト構成
+
+| レイヤ | フレームワーク | 主目的 | 方針 |
+|--------|----------------|--------|------|
+| **Unit（Model / Service / Policy / Query）** | RSpec | 内部ロジック・ビジネスルールの網羅 | 最も厚く。DBアクセス最小化（`build_stubbed`推奨） |
+| **Request（API統合）** | RSpec + RSwag | HTTPレベルの外部仕様保証 | 各APIごとに正常系・認証/認可・代表的なエラーを最小本数で検証 |
+
+### テスト設計の原則
+
+- **パッケージ単位**でテストを配置（`app/packages/<package>/spec`）
+- **Controller は薄く、Service/Model を厚く**テストする  
+  - Controller：入出力変換・認可・HTTPステータスのみ  
+  - Service/Model：ビジネスロジックや分岐・境界値を網羅
+- **リクエストスペックは最小限に留める**  
+  - 正常系（ハッピーパス）  
+  - 認証/認可エラー（401, 403）  
+  - 代表的なバリデーションエラー（422）  
+  - JSON構造とステータスコードを確認し、詳細は **RSwag の Schema** で担保
+- **RSwag による仕様同期**  
+  - OpenAPI 仕様をテストと連動させ、実装とドキュメントを一致させる
+
+### 実行コマンド
+
 ```bash
 # 全テスト実行
 bundle exec rspec
 
-# 特定のスペックのみ実行
+# 特定スペックのみ実行（例：helloパッケージのAPIテスト）
 bundle exec rspec spec/requests/hello_spec.rb
 ```
 
-### テスト設計の原則
-- パッケージ単位でテストを記述
-- RSpecのリクエストスペックでAPI動作を検証
-- RSwagでテストと仕様書を同期
+### 運用ルール
+
+- RSpec は --order random --seed でランダム実行し再現性を担保
+- FactoryBot は trait で関係を明示、build_stubbed を優先
+- 外部API・ジョブ・時間依存は stub / freeze で固定化
+- Bullet を test 環境で有効化し、主要APIで N+1 を検出
+- SimpleCov によりカバレッジを計測（主要ユースケースの網羅確認）
 
 ## API仕様
 
