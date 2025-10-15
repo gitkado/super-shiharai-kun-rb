@@ -16,9 +16,20 @@ Ruby on Rails 7.2で構築した企業向け支払い管理システムのREST A
 - RSpec 7.1
 - Packwerk 3.2 (パッケージ管理)
 
+## 仕様ドキュメント運用（`specs/` ディレクトリ）
+
+- 機能ごとに `specs/<feature_slug>/` を作成し、以下3ファイルで情報を整理する:
+  - `requirements.md`: 背景、課題、スコープ、非機能要件、ステークホルダー、指標
+  - `design.md`: 設計判断、パッケージ構造、公開API、データ/イベント設計、テスト戦略、リスク
+  - `tasks.md`: 実装TODO、検証コマンド、進捗ログ、残課題
+- `<feature_slug>` はケバブケース（例: `invoice-approval-flow`）。既存機能の場合は追記、未作成ならディレクトリを新規作成する。
+- Claude Codeのarchitectサブエージェントは requirements / design を、implementerサブエージェントは tasks を更新する。差分が出た場合は関連ファイルも合わせて更新する。
+- 詳細ガイド: `specs/README.md`
+
 ## 開発コマンド
 
 ### 環境セットアップ
+
 ```bash
 # Ruby環境確認（asdf使用時）
 asdf current ruby
@@ -37,12 +48,14 @@ bin/rails s
 ```
 
 **railsコマンドの使い分け:**
+
 - `bin/rails` を優先（binstubsを使用）
 - 明示的にgemのrailsを使う必要がある場合のみ `bundle exec rails`
 
 ### テスト実行
+
 ```bash
-# 全テスト実行
+# 全テスト実行（ランダム順序・シード値で再現性を担保）
 bundle exec rspec
 
 # 特定のファイルのテスト
@@ -54,11 +67,21 @@ bundle exec rspec spec/requests/hello_spec.rb:10
 # fail-fast（最初のエラーで停止）
 bundle exec rspec --fail-fast
 
+# 特定のシード値で実行（再現テスト）
+bundle exec rspec --seed 12345
+
 # テスト環境のデータベース準備
 RAILS_ENV=test bin/rails db:create db:migrate
 ```
 
+**テスト品質ツール:**
+
+- **Bullet**: テスト環境で有効化され、N+1クエリを自動検出してログに出力
+- **SimpleCov**: テスト実行時にカバレッジを自動計測（`coverage/` ディレクトリに出力）
+- **RSpec設定**: ランダム実行（`--order random`）でテスト間の依存を防止
+
 ### コード品質チェック
+
 ```bash
 # RuboCop（コードスタイル自動修正）
 bundle exec rubocop -a
@@ -89,6 +112,7 @@ bundle exec bundler-audit check --update
 ```
 
 ### API仕様書生成
+
 ```bash
 # Swagger YAML生成（RSpecから自動生成）
 RAILS_ENV=test bundle exec rake rswag:specs:swaggerize
@@ -98,19 +122,23 @@ RAILS_ENV=test bundle exec rake rswag:specs:swaggerize
 ```
 
 ### Git Hooks（Lefthook）
+
 Lefthookによる自動チェックが設定済み:
 
 **pre-commit:**
+
 - RuboCop（変更ファイルのみ）
 - Packwerk validate + check（変更ファイルのみ）
 - RSpec（fail-fast）
 
 **pre-push:**
+
 - Brakeman（セキュリティスキャン）
 - Bundler Audit（依存gem脆弱性チェック）
 - RSpec（全テスト）
 
 **フックをスキップ:**
+
 ```bash
 # 全てのフックをスキップ（緊急時のみ）
 LEFTHOOK=0 git commit -m "message"
@@ -119,11 +147,28 @@ LEFTHOOK=0 git commit -m "message"
 LEFTHOOK_EXCLUDE=test git commit -m "message"
 ```
 
+### カスタムスラッシュコマンド
+
+Claude Code専用のカスタムコマンドが `.claude/commands/` に定義されています：
+
+- **/test**: RSpec全体または指定ファイルを実行するテスト用コマンド
+- **/lint**: RuboCop・Packwerk・Brakeman をまとめて実行する品質チェックコマンド
+- **/commit-plan**: ステージ済み差分を保存してcommitterサブエージェントでコミット計画を自動作成
+- **/commit-apply**: committerが用意したコミットプランを順次適用するコマンド
+
+**使用例:**
+
+```bash
+/test spec/requests/hello_spec.rb
+/lint
+/commit-plan
+```
+
 ## アーキテクチャ
 
 ### モジュラーモノリスの構造
 
-```
+```text
 app/
 ├── controllers/         # 共通基盤 - ApplicationControllerと技術的concernのみ
 ├── models/              # 共通基盤 - ApplicationRecordと技術的concernのみ
@@ -142,18 +187,21 @@ app/
 ### 重要な原則
 
 **app直下（共通基盤・インフラ層）:**
+
 - ✅ 基底クラス（Application*）
 - ✅ 全パッケージで共有する技術的な機能
 - ✅ Rackミドルウェア
 - ❌ ビジネスロジック → `app/packages/` へ
 
 **app/packages/（ビジネスロジック層）:**
+
 - ✅ 全てのドメイン固有のController, Model, Job, Mailer
 - ✅ ビジネスルール、機能実装
 - ✅ Railsの標準構成（MVC）に従う
 - ✅ Fat Model, Skinny Controller
 
 **公開APIの方針:**
+
 - デフォルトは全て非公開（packages内のapp/配下）
 - 他パッケージから利用されるものだけ `app/public/` に配置
 
@@ -182,6 +230,7 @@ bundle exec packwerk check
 ```
 
 ### パッケージ間の依存関係ルール
+
 - 各ドメインパッケージはルートパッケージに依存できる
 - **循環依存は禁止**（Packwerkが検出）
 - 他パッケージの非公開クラスへの直接参照は禁止（`app/public/` のみアクセス可能）
@@ -189,16 +238,19 @@ bundle exec packwerk check
 ## 技術的な特徴
 
 ### 構造化ログ（SemanticLogger）
+
 - 全環境でJSON形式出力
 - リクエストごとに自動付与される `trace_id` で横断的な追跡が可能
 - エラーレスポンスに `trace_id` を含めることでログとの紐付けが可能
 
 ### グローバルエラーハンドリング
+
 - 統一されたエラーレスポンス形式（JSON）
 - トレースID連携
 - カスタムエラー対応: ビジネスロジック固有のエラーは `DomainError` を継承
 
 エラーレスポンス例:
+
 ```json
 {
   "error": {
@@ -210,8 +262,9 @@ bundle exec packwerk check
 ```
 
 ### API仕様書（RSwag）
+
 - RSpecのリクエストスペックから自動生成
-- Swagger UI: http://localhost:3000/api-docs
+- Swagger UI: <http://localhost:3000/api-docs>
 - 定義ファイル: `swagger/v1/swagger.yaml`
 
 ## RuboCopの設定
@@ -228,6 +281,7 @@ bundle exec packwerk check
 Claudeのcommitterサブエージェントは、以下のルールに従ってコミットを分割・命名すること。
 
 ### 優先的に分離する対象
+
 - `db/migrate/*.rb` → `chore(migration)` または `feat(db)`（単独コミット）
 - `db/schema.rb` → `chore(schema)`（単独コミット）
 - `Gemfile.lock` → `chore(lockfile)`（単独コミット）
@@ -235,23 +289,27 @@ Claudeのcommitterサブエージェントは、以下のルールに従って�
 - `config/routes.rb` → `chore(routes)`（単独コミット）
 
 ### ドメイン/パッケージ単位
+
 - `app/packages/<domain>/` ごとにコミットを分ける。
-- コミット種別:  
+- コミット種別:
   - 実装: `feat(pack-<domain>)` / `fix(pack-<domain>)` / `refactor(pack-<domain>)`
   - テスト: `test(pack-<domain>)`
-- 例:  
-  - `feat(pack-payment): 承認APIを追加`  
+- 例:
+  - `feat(pack-payment): 承認APIを追加`
   - `test(pack-payment): 承認APIの異常系を追加`
 
 ### 横断的な変更
+
 - `config/`（routes除く） → `chore(config)`
 - `app/middleware/` → `feat|refactor(middleware)`
 - `doc/`, `README`, `CHANGELOG` → `docs`
 
 ### コミットメッセージの形式
+
 - **タイトル**: 50〜72文字以内、日本語で要約（Conventional Commits準拠）
   - 例: `feat(pack-user): ユーザー認証APIを追加`
 - **本文**: 箇条書きで「Before / After / 影響 / リスク / rollback / 関連Issue」
+
   ```text
   - Before: ユーザー登録後に自動ログインされない
   - After: 登録成功時にJWTを発行
@@ -259,19 +317,22 @@ Claudeのcommitterサブエージェントは、以下のルールに従って�
   - rollback: revert可、スキーマ変更なし
   - Related: #123
   ```
-- **Co-Authored-By は不要**: Claude Code生成のコミットでも `Co-Authored-By: Claude` やその他の共同作成者トレーラーを含めない
+
+- **フッター**: Claude Code生成マーカーやCo-Authored-Byトレーラーは**含めない**
   - GitHubで「gitkado and Claude committed」と表示されることを避けるため
   - コミットの作成者は常に `gitkado <gitkado@gmail.com>` のみ
 
 ## その他のコマンド
 
 ### ヘルスチェック
+
 ```bash
 # アプリケーションが起動しているか確認
 curl -if http://localhost:3000/up
 ```
 
 ### データベース操作
+
 ```bash
 # マイグレーション実行
 bin/rails db:migrate
@@ -287,10 +348,12 @@ bin/rails db:seed
 ```
 
 **データベース接続情報:**
+
 - `config/database.yml` および `docker-compose.yml` を参照
 - デフォルト: PostgreSQL on localhost:5432
 
 ### コンソール
+
 ```bash
 # Railsコンソール起動
 bin/rails console
@@ -302,6 +365,7 @@ RAILS_ENV=test bin/rails console
 ## 参考ドキュメント
 
 詳細は以下を参照:
+
 - `doc/modular_monolith.md` - モジュラーモノリスアーキテクチャの詳細
 - `doc/packwerk_guide.md` - Packwerk使用方法
 - `doc/error_handling.md` - エラーハンドリングの詳細
