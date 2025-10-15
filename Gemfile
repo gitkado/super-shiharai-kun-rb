@@ -68,4 +68,7 @@ group :development, :test do
 
   gem "lefthook", require: false
   # gem "simplecov", require: false
+
+  # N+1 query detection [https://github.com/flyerhzm/bullet]
+  gem "bullet"
 end
