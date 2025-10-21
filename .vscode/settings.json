@@ -1,0 +1,20 @@
+{
+  "rubyLsp.rubyVersionManager": "bundler",
+  "rubyLsp.rubyCommand": "bundle",
+  "files.watcherExclude": {
+    "**/tmp/**": true,
+    "**/log/**": true,
+    "**/node_modules/**": true,
+    "**/vendor/bundle/**": true,
+    "**/coverage/**": true,
+    "**/storage/**": true
+  },
+  "search.exclude": {
+    "**/tmp": true,
+    "**/log": true,
+    "**/coverage": true,
+    "**/vendor/bundle": true,
+    "**/storage": true
+  },
+  "editor.inlayHints.enabled": "on"
+}
