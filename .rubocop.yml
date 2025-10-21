@@ -75,3 +75,6 @@ Sorbet/ForbidTUntyped:
 
 Sorbet/EnforceSignatures:
   Enabled: false
+
+Sorbet/ForbidSuperclassConstLiteral:
+  Enabled: false
