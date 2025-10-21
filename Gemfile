@@ -21,7 +21,7 @@ gem "puma", ">= 5.0"
 
 # Authentication with Rodauth and JWT
 gem "rodauth-rails", "~> 1.15"
-gem "jwt", "~> 2.10"
+gem "jwt", "~> 3.1"
 gem "bcrypt", "~> 3.1"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
