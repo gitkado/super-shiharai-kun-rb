@@ -655,7 +655,83 @@ LEFTHOOK=0 git commit -m "message"
 - [x] `requirements.md` 作成
 - [x] `design.md` 作成
 - [x] `tasks.md` 作成（このファイル）
-- [ ] フェーズ1実装（実装者へ引き継ぎ）
+- [x] フェーズ1実装完了
+
+### 2025-10-21: フェーズ1実装完了
+
+#### 実施内容
+
+**タスク1-2: Gemfileへのruby-lsp追加**
+- [x] `Gemfile` の `group :development, :test` に以下を追加:
+  - `ruby-lsp` (0.26.1)
+  - `ruby-lsp-rails` (0.4.8)
+  - `ruby-lsp-rspec` (0.1.28)
+  - ~~`ruby-lsp-rubocop`~~ (gemが存在しないため除外。Ruby LSP本体がRuboCop統合機能を持つため不要)
+- [x] `bundle install` 実行完了
+
+**タスク1-3: `.vscode/settings.json` の作成**
+- [x] `.vscode/` ディレクトリ作成
+- [x] 以下の設定を記述:
+  - `rubyLsp.rubyVersionManager: "bundler"` - asdf環境での安定動作
+  - `rubyLsp.rubyCommand: "bundle"` - bundler経由でLSP起動
+  - `files.watcherExclude` - 不要なファイル監視を除外（tmp, log, coverage等）
+  - `search.exclude` - 検索対象から除外（tmp, log, coverage等）
+  - `editor.inlayHints.enabled: "on"` - 引数名・型情報をインライン表示
+
+**タスク2-1: Zeitwerkチェックの実行**
+- [x] `bin/rails zeitwerk:check` 実行
+- [x] 結果: **All is good!** - Zeitwerk準拠を確認
+- ⚠️ DEPRECATION警告あり（影響なし、後で対応）:
+  - `Account` モデルのenum定義（Railsのキーワード引数形式が非推奨）
+  - rswag-api, rswag-uiのメソッド名変更予定
+
+**タスク4-1: README.md への参照**
+- [x] README.md には既にVS Code LSPセクションが存在（35-47行目）
+- [x] `specs/vscode-lsp-setup/` へのリンクが記載済み
+
+#### 検証結果
+
+```bash
+# Ruby LSP gem確認
+$ bundle list | grep ruby-lsp
+  * ruby-lsp (0.26.1)
+  * ruby-lsp-rails (0.4.8)
+  * ruby-lsp-rspec (0.1.28)
+
+# Zeitwerk健全性確認
+$ bin/rails zeitwerk:check
+All is good!
+
+# .vscode/settings.json 確認
+$ cat .vscode/settings.json | jq '.rubyLsp.rubyVersionManager'
+"bundler"
+```
+
+#### 次のステップ（開発者向け）
+
+1. **VS Code拡張のインストール**（手動操作）
+   - VS Code拡張機能マーケットプレイスで「Ruby LSP」を検索
+   - 以下の拡張をインストール:
+     - **Ruby LSP** (Shopify.ruby-lsp) - 必須
+     - **Ruby LSP Rails** (Shopify.ruby-lsp-rails) - 推奨
+     - **Ruby LSP RSpec** (Shopify.ruby-lsp-rspec) - 推奨
+
+2. **VS Codeの再起動**
+   - VS Codeを完全に終了してから再度開く
+   - 右下のステータスバーに「Ruby LSP」アイコンが表示され、"Running" になることを確認
+
+3. **動作確認**
+   - 任意のRubyファイルを開いて以下を確認:
+     - [ ] クラス名やメソッド名にカーソルを合わせると情報が表示される（ホバー）
+     - [ ] `F12`（定義へジャンプ）が動作する
+     - [ ] `Ctrl+Space`（補完）でメソッド候補が表示される
+     - [ ] `Shift+F12`（参照検索）が動作する
+
+#### 残課題
+
+- [ ] 開発者全員によるVS Code拡張インストールと動作確認
+- [ ] Accountモデルのenum定義をRails 8.0準拠形式に変更（DEPRECATION対応）
+- [ ] rswag-api, rswag-uiのメソッド名変更（v3.0準拠形式）
 
 ---
 
