@@ -101,10 +101,26 @@ end
 - ユーザー情報管理
 - メールアドレスバリデーション
 - メール正規化（小文字変換）
+- アカウントステータス管理（Enum）
+
+**Enum定義:**
+```ruby
+enum status: {
+  unverified: "unverified", # メール未確認
+  verified: "verified",     # メール確認済み（デフォルト）
+  locked: "locked",         # アカウントロック
+  closed: "closed"          # アカウント閉鎖
+}, _prefix: true
+```
+
+**利用可能なメソッド:**
+- `account.status_verified?` / `account.status_locked?` など
+- `account.status_verified!` / `account.status_locked!` など（更新+保存）
+- `Account.status_verified` / `Account.status_locked` など（スコープ）
 
 **バリデーション:**
 - `email`: 必須、メール形式、一意性（大文字小文字区別なし）
-- `status`: デフォルト "verified"（メール確認スキップ）
+- `status`: デフォルト "verified"（メール確認スキップ）、Enumで型安全性確保
 
 **コールバック:**
 - `before_validation :normalize_email` → 小文字・trim処理
