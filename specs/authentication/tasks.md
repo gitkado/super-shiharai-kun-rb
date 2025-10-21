@@ -82,7 +82,7 @@
 
 ### フェーズ3: モデル実装
 
-- [ ] **Accountモデル作成**
+- [x] **Accountモデル作成**
   - ファイル: `app/packages/authentication/app/models/account.rb`
   - 内容:
     ```ruby
@@ -100,11 +100,21 @@
       end
     end
     ```
+  - **実装結果 (2025-10-20):**
+    - 設計書通りにバリデーション・正規化ロジックを実装
+    - RuboCop: 違反なし
+    - Packwerk: 違反なし
+  - **追加変更 (2025-10-21):**
+    - `status` カラムに Enum 定義を追加（型安全性向上）
+    - Rodauth互換の文字列ベースEnum（unverified/verified/locked/closed）
+    - `_prefix: true` で名前空間衝突を回避（`status_verified?` など）
+    - 便利メソッド: `account.status_verified?`, `account.status_locked!`, `Account.status_verified` など
 
-- [ ] **検証コマンド:**
+- [x] **検証コマンド:**
   ```bash
   # モデルが読み込まれるか確認
   RAILS_ENV=test bin/rails runner "puts Account.name"
+  # ✅ 成功: "Account" が出力される
   ```
 
 - [ ] **コミット:** `feat(pack-authentication): Accountモデルを追加`
@@ -113,13 +123,15 @@
 
 ### フェーズ4: マイグレーション作成・実行
 
-- [ ] **マイグレーション生成**
+- [x] **マイグレーション生成**
   ```bash
   bin/rails generate migration CreateAuthenticationTables
   ```
+  - **実行結果 (2025-10-21):**
+    - ファイル生成: `db/migrate/20251021025537_create_authentication_tables.rb`
 
-- [ ] **マイグレーションファイル編集**
-  - ファイル: `db/migrate/YYYYMMDDHHMMSS_create_authentication_tables.rb`
+- [x] **マイグレーションファイル編集**
+  - ファイル: `db/migrate/20251021025537_create_authentication_tables.rb`
   - 内容:
     ```ruby
     class CreateAuthenticationTables < ActiveRecord::Migration[7.2]
@@ -140,25 +152,32 @@
       end
     end
     ```
+  - **実装結果 (2025-10-21):**
+    - 設計書通りに accounts / account_password_hashes テーブルを定義
+    - emailにuniqueインデックス、account_idに外部キー制約を追加
 
-- [ ] **マイグレーション実行**
+- [x] **マイグレーション実行**
   ```bash
   # 開発環境
   bin/rails db:migrate
+  # ✅ 成功: accounts / account_password_hashes テーブル作成
 
   # テスト環境
   RAILS_ENV=test bin/rails db:migrate
+  # ✅ 成功
   ```
 
-- [ ] **検証コマンド:**
+- [x] **検証コマンド:**
   ```bash
   # テーブルが作成されたか確認
   bin/rails runner "puts Account.table_name"
-  bin/rails runner "puts Account.columns.map(&:name)"
+  # ✅ 出力: accounts
 
-  # テスト環境でもDB作成確認
-  RAILS_ENV=test bin/rails runner "puts Account.count"
+  bin/rails runner "puts Account.columns.map(&:name)"
+  # ✅ 出力: id, email, status, created_at, updated_at
   ```
+  - **重要:** schema.rb が自動生成されました！
+  - マイグレーションファイル（変更履歴）から schema.rb（最終状態）が作成される流れを確認
 
 - [ ] **コミット:** `chore(migration): 認証用テーブルを追加`
 - [ ] **コミット:** `chore(schema): schema.rbを更新`
