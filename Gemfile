@@ -20,7 +20,7 @@ gem "puma", ">= 5.0"
 # gem "bcrypt", "~> 3.1.7"
 
 # Authentication with Rodauth and JWT
-gem "rodauth-rails", "~> 1.15"
+gem "rodauth-rails", "~> 2.1"
 gem "jwt", "~> 2.10"
 gem "bcrypt", "~> 3.1"
 
