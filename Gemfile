@@ -79,4 +79,9 @@ group :development, :test do
 
   # N+1 query detection [https://github.com/flyerhzm/bullet]
   gem "bullet"
+
+  # Language Server Protocol (LSP) for Ruby and Rails
+  gem "ruby-lsp", require: false
+  gem "ruby-lsp-rails", require: false
+  gem "ruby-lsp-rspec", require: false
 end

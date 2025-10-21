@@ -282,6 +282,8 @@ GEM
       zeitwerk (~> 2.6)
     rainbow (3.1.1)
     rake (13.3.0)
+    rbs (3.9.5)
+      logger
     rdoc (6.15.0)
       erb
       psych (>= 4.0.0)
@@ -375,6 +377,14 @@ GEM
     rubocop-sorbet (0.11.0)
       lint_roller
       rubocop (>= 1.75.2)
+    ruby-lsp (0.26.1)
+      language_server-protocol (~> 3.17.0)
+      prism (>= 1.2, < 2.0)
+      rbs (>= 3, < 5)
+    ruby-lsp-rails (0.4.8)
+      ruby-lsp (>= 0.26.0, < 0.27.0)
+    ruby-lsp-rspec (0.1.28)
+      ruby-lsp (~> 0.26.0)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
     semantic_logger (4.17.0)
@@ -454,6 +464,9 @@ DEPENDENCIES
   rubocop-packs
   rubocop-rails-omakase
   rubocop-rspec
+  ruby-lsp
+  ruby-lsp-rails
+  ruby-lsp-rspec
   tzinfo-data
 
 BUNDLED WITH
