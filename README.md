@@ -32,6 +32,20 @@ bundle exec rspec
 bundle exec rspec spec/requests/hello_spec.rb
 ```
 
+### VS Code + Ruby LSP（開発環境強化）
+
+開発体験を大幅に向上させるLSP（Language Server Protocol）導入ガイドです。
+
+詳細は [specs/vscode-lsp-setup/](specs/vscode-lsp-setup/) を参照してください。
+
+#### クイックスタート
+
+1. VS Code拡張「Ruby LSP」をインストール
+2. `bundle install` でruby-lsp gemを取得
+3. VS Codeを再起動
+
+詳細な設定・トラブルシューティングは上記リンク先を参照してください。
+
 ## プロジェクト概要
 
 企業向け支払い管理システムの機能

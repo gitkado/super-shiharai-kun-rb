@@ -366,6 +366,7 @@ RAILS_ENV=test bin/rails console
 
 詳細は以下を参照:
 
+- `specs/vscode-lsp-setup/` - VS Code + Ruby LSP導入ガイド（開発環境セットアップ）
 - `doc/modular_monolith.md` - モジュラーモノリスアーキテクチャの詳細
 - `doc/packwerk_guide.md` - Packwerk使用方法
 - `doc/error_handling.md` - エラーハンドリングの詳細
