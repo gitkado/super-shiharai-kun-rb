@@ -74,13 +74,10 @@ GEM
       tzinfo (~> 2.0, >= 2.0.5)
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
-    after_commit_everywhere (1.6.0)
-      activerecord (>= 4.2)
-      activesupport
     ast (2.4.3)
     base64 (0.3.0)
     bcrypt (3.1.20)
-    benchmark (0.4.1)
+    benchmark (0.5.0)
     better_html (2.2.0)
       actionview (>= 7.0)
       activesupport (>= 7.0)
@@ -88,7 +85,7 @@ GEM
       erubi (~> 1.4)
       parser (>= 2.4)
       smart_properties
-    bigdecimal (3.2.3)
+    bigdecimal (3.3.1)
     bootsnap (1.18.6)
       msgpack (~> 1.2)
     brakeman (7.1.0)
@@ -120,7 +117,7 @@ GEM
       dotenv (= 3.1.8)
       railties (>= 6.1)
     drb (2.2.3)
-    erb (5.0.2)
+    erb (5.1.1)
     erubi (1.13.1)
     globalid (1.3.0)
       activesupport (>= 6.1)
@@ -151,7 +148,7 @@ GEM
       net-smtp
     marcel (1.1.0)
     mini_mime (1.1.5)
-    minitest (5.25.5)
+    minitest (5.26.0)
     msgpack (1.8.0)
     net-imap (0.5.11)
       date
@@ -228,7 +225,7 @@ GEM
     pg (1.6.2-x86_64-darwin)
     pg (1.6.2-x86_64-linux)
     pg (1.6.2-x86_64-linux-musl)
-    pp (0.6.2)
+    pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
     prism (1.5.1)
@@ -298,14 +295,11 @@ GEM
       sequel (>= 4)
     rodauth-model (0.4.0)
       rodauth (~> 2.28)
-    rodauth-rails (1.15.2)
-      bcrypt
-      railties (>= 5.0, < 8.1)
+    rodauth-rails (2.1.1)
+      railties (>= 5.1)
       roda (~> 3.76)
       rodauth (~> 2.36)
       rodauth-model (~> 0.2)
-      sequel-activerecord_connection (~> 1.1)
-      tilt
     rspec-core (3.13.5)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.5)
@@ -391,15 +385,10 @@ GEM
       concurrent-ruby (~> 1.0)
     sequel (5.97.0)
       bigdecimal
-    sequel-activerecord_connection (1.5.1)
-      activerecord (>= 5.0, < 8.1)
-      after_commit_everywhere (~> 1.1)
-      sequel (~> 5.38)
     smart_properties (1.17.0)
     sorbet-runtime (0.6.12632)
     stringio (3.1.7)
     thor (1.4.0)
-    tilt (2.6.1)
     timeout (0.4.3)
     tsort (0.2.0)
     tty-color (0.6.0)
@@ -456,7 +445,7 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 7.2.2)
   rails_semantic_logger
-  rodauth-rails (~> 1.15)
+  rodauth-rails (~> 2.1)
   rspec-rails (~> 7.1)
   rswag-api
   rswag-specs
