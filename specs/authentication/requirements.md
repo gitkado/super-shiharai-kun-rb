@@ -13,6 +13,24 @@
 - 他パッケージから利用可能な認証基盤を構築
 - モジュラーモノリスの原則に従い、`app/packages/authentication/` に独立したドメインとして配置
 
+### Rodauth選定理由（BCrypt手動実装からの移行）
+
+**背景:**
+- 初期実装でBCryptを直接利用し、Fat Modelパターンで認証ロジックを実装していた
+- しかし、本プロジェクトの重要ドメインは「請求管理」であり、認証は標準ライブラリで簡潔に実装すべき
+
+**Rodauth採用のメリット:**
+1. **コード量削減**: パスワードハッシュ管理、JWT発行、検証ロジックをフレームワークが提供
+2. **セキュリティベストプラクティス**: bcryptコスト設定、ハッシュ保存方法、タイミング攻撃対策が組み込み済み
+3. **将来の拡張性**: パスワードリセット、2FA、アカウントロック等の機能を追加設定のみで有効化可能
+4. **Rails統合**: `rodauth-rails` gemによるActiveRecord互換性とRailsルーティング統合
+5. **JWT標準対応**: `enable :jwt` で標準的なJWT認証が即座に利用可能
+
+**移行方針:**
+- 既存のマイグレーション（accounts, account_password_hashes）は再利用
+- `Authentication::JwtService` は公開APIとして残し、内部でRodauthを利用
+- エンドポイント仕様（`POST /api/v1/auth/register`, `POST /api/v1/auth/login`）は互換性を維持
+
 ## 現在の課題
 
 - [ ] 認証機能が存在しない
