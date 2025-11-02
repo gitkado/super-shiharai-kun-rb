@@ -74,6 +74,29 @@ bundle exec rspec spec/requests/hello_spec.rb
 | RSpec      | 7.1   | テストフレームワーク |
 | Puma       | -     | Webサーバー     |
 | Packwerk   | 3.2   | パッケージ管理     |
+| BCrypt     | 3.1   | パスワードハッシュ化 |
+| JWT        | 2.10  | トークン認証      |
+
+### 認証実装について
+
+本プロジェクトの認証機能は **BCrypt + JWT の直接利用** により実装されています。
+
+**現在の実装方針:**
+- **BCrypt**: パスワードハッシュ化（`account_password_hashes`テーブル）
+- **JWT**: ステートレストークン認証（`Authentication::JwtService`）
+- **実装場所**: `app/packages/authentication/` パッケージ
+- **エンドポイント**:
+  - `POST /api/v1/auth/register` - ユーザー登録
+  - `POST /api/v1/auth/login` - ログイン
+
+**この設計判断の理由:**
+1. **本プロジェクトの主目的は請求管理ドメインの実装**
+2. **認証機能は標準的な実装で十分** - 初期フェーズではシンプルな構成を優先
+3. **保守性**: Rails標準パターンに従い、Fat Model, Skinny Controllerの方針を維持
+
+**将来的な拡張:**
+- パスワードリセット、2FA、メール確認等の高度な認証機能が必要になった場合、[Rodauth](https://rodauth.jeremyevans.net/)への段階的移行を検討
+- `rodauth-rails` gemは依存関係に含まれていますが、現在は直接利用していません（将来の拡張用）
 
 ## アーキテクチャ
 
