@@ -17,12 +17,11 @@ gem "puma", ">= 5.0"
 # gem "kredis"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem "bcrypt", "~> 3.1.7"
-
-# Authentication with Rodauth and JWT
-gem "rodauth-rails", "~> 1.15"
-gem "jwt", "~> 2.10"
-gem "bcrypt", "~> 3.1"
+# Authentication with BCrypt and JWT
+# Note: 将来的にパスワードリセット・2FA等が必要になった場合は
+#       rodauth-rails (~> 1.15) の導入を検討してください
+gem "jwt", "~> 2.10"            # JWTトークン生成・検証
+gem "bcrypt", "~> 3.1"          # パスワードハッシュ化
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
