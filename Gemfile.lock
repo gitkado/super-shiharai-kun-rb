@@ -132,7 +132,7 @@ GEM
     json-schema (5.2.2)
       addressable (~> 2.8)
       bigdecimal (~> 3.1)
-    jwt (2.10.2)
+    jwt (3.1.2)
       base64
     language_server-protocol (3.17.0.5)
     lefthook (1.13.6)
@@ -421,7 +421,7 @@ DEPENDENCIES
   bundler-audit
   debug
   dotenv-rails
-  jwt (~> 2.10)
+  jwt (~> 3.1)
   lefthook
   ostruct
   packs-rails
