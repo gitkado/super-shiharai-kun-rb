@@ -20,7 +20,7 @@ gem "puma", ">= 5.0"
 # Authentication with BCrypt and JWT
 # Note: 将来的にパスワードリセット・2FA等が必要になった場合は
 #       rodauth-rails (~> 1.15) の導入を検討してください
-gem "jwt", "~> 2.10"            # JWTトークン生成・検証
+gem "jwt", "~> 3.1"             # JWTトークン生成・検証
 gem "bcrypt", "~> 3.1"          # パスワードハッシュ化
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
