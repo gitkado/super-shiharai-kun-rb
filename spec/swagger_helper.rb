@@ -18,20 +18,53 @@ RSpec.configure do |config|
     'v1/swagger.yaml' => {
       openapi: '3.0.1',
       info: {
-        title: 'API V1',
-        version: 'v1'
+        title: 'スーパー支払い君 API',
+        version: 'v1',
+        description: '企業向け支払い管理システムのREST API'
       },
       paths: {},
       servers: [
         {
+          url: 'http://localhost:3000',
+          description: '開発環境'
+        },
+        {
           url: 'https://{defaultHost}',
+          description: '本番環境',
           variables: {
             defaultHost: {
-              default: 'www.example.com'
+              default: 'api.super-shiharai-kun.com'
             }
           }
         }
-      ]
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: :http,
+            scheme: :bearer,
+            bearerFormat: 'JWT',
+            description: 'JWT認証トークン（ログイン/登録APIで取得）'
+          }
+        },
+        schemas: {
+          ErrorResponse: {
+            type: :object,
+            properties: {
+              error: {
+                type: :object,
+                properties: {
+                  code: { type: :string, example: 'VALIDATION_ERROR' },
+                  message: { type: :string, example: 'Email has already been taken' },
+                  trace_id: { type: :string, example: '682d608d-d8e7-45cc-abd8-a2b75d30c0bf' }
+                },
+                required: [ :code, :message, :trace_id ]
+              }
+            },
+            required: [ :error ]
+          }
+        }
+      }
     }
   }
 

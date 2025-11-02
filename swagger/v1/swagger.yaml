@@ -1,29 +1,180 @@
 ---
 openapi: 3.0.1
 info:
-  title: API V1
+  title: スーパー支払い君 API
   version: v1
+  description: 企業向け支払い管理システムのREST API
 paths:
-  "/hello_world":
-    get:
-      summary: Returns hello world message
+  "/api/v1/auth/register":
+    post:
+      summary: ユーザー登録
       tags:
-      - Hello
+      - Authentication
+      description: アカウントを作成し、JWTトークンを発行します
+      parameters: []
       responses:
-        '200':
-          description: successful
+        '201':
+          description: アカウント作成成功
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  jwt:
                     type: string
-                    example: hello world
+                    description: JWTトークン（認証用）
+                    example: eyJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50X2lkIjoxLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJleHAiOjE3MzAwMDAwMDB9.abc123
+                  account:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      email:
+                        type: string
+                        example: user@example.com
+                      status:
+                        type: string
+                        example: verified
+                        enum:
+                        - unverified
+                        - verified
+                        - locked
+                        - closed
+                    required:
+                    - id
+                    - email
+                    - status
                 required:
-                - message
+                - jwt
+                - account
+        '422':
+          description: パラメータ不足エラー
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: メールアドレス（一意）
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  description: パスワード
+                  example: secure_password_123
+              required:
+              - email
+              - password
+  "/api/v1/auth/login":
+    post:
+      summary: ログイン
+      tags:
+      - Authentication
+      description: メールアドレスとパスワードで認証し、JWTトークンを発行します
+      parameters: []
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jwt:
+                    type: string
+                    description: JWTトークン（認証用）
+                    example: eyJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50X2lkIjoxLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJleHAiOjE3MzAwMDAwMDB9.abc123
+                  account:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      email:
+                        type: string
+                        example: user@example.com
+                      status:
+                        type: string
+                        example: verified
+                        enum:
+                        - unverified
+                        - verified
+                        - locked
+                        - closed
+                    required:
+                    - id
+                    - email
+                    - status
+                required:
+                - jwt
+                - account
+        '401':
+          description: パラメータ不足エラー
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: メールアドレス
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  description: パスワード
+                  example: secure_password_123
+              required:
+              - email
+              - password
 servers:
+- url: http://localhost:3000
+  description: 開発環境
 - url: https://{defaultHost}
+  description: 本番環境
   variables:
     defaultHost:
-      default: www.example.com
+      default: api.super-shiharai-kun.com
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT認証トークン（ログイン/登録APIで取得）
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: Email has already been taken
+            trace_id:
+              type: string
+              example: 682d608d-d8e7-45cc-abd8-a2b75d30c0bf
+          required:
+          - code
+          - message
+          - trace_id
+      required:
+      - error
