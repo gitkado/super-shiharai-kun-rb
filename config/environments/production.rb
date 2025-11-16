@@ -51,7 +51,7 @@ Rails.application.configure do
 
   # SemanticLoggerでJSON形式のログを出力
   config.semantic_logger.application = "super-shiharai-kun"
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+  config.log_level = AppConfig.rails_log_level
 
   # デフォルトのファイルappenderを無効化してSTDOUTのみに出力
   config.rails_semantic_logger.add_file_appender = false

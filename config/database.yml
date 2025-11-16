@@ -17,7 +17,7 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  pool: <%= AppConfig.rails_max_threads(5) %>
 
 
 development:
@@ -66,10 +66,10 @@ test:
 #     url: <%= ENV["MY_APP_DATABASE_URL"] %>
 #
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
-# for a full overview on how database connection configuration can be specified.
-#
+  # for a full overview on how database connection configuration can be specified.
+  #
 production:
   <<: *default
   database: super_shiharai_kun_rb_production
   username: super_shiharai_kun_rb
-  password: <%= ENV["SUPER_SHIHARAI_KUN_RB_DATABASE_PASSWORD"] %>
+  password: <%= AppConfig.database_password %>

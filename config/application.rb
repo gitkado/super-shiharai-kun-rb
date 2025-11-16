@@ -2,6 +2,8 @@
 
 require_relative "boot"
 
+require_relative "app_config"
+
 require "rails/all"
 
 # Require the gems listed in Gemfile, including any gems

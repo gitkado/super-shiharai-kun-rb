@@ -34,7 +34,7 @@ module Authentication
 
       # JWT秘密鍵を取得
       def jwt_secret
-        ENV.fetch("JWT_SECRET_KEY")
+        AppConfig.jwt_secret
       end
     end
   end
