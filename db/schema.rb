@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_10_21_025537) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_17_111943) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -28,5 +28,23 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_21_025537) do
     t.index ["email"], name: "index_accounts_on_email", unique: true
   end
 
+  create_table "invoices", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "issue_date", null: false
+    t.decimal "payment_amount", precision: 15, scale: 2, null: false
+    t.decimal "fee", precision: 15, scale: 2, null: false
+    t.decimal "fee_rate", precision: 5, scale: 4, null: false
+    t.decimal "tax_amount", precision: 15, scale: 2, null: false
+    t.decimal "tax_rate", precision: 5, scale: 4, null: false
+    t.decimal "total_amount", precision: 15, scale: 2, null: false
+    t.date "payment_due_date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["payment_due_date"], name: "index_invoices_on_payment_due_date"
+    t.index ["user_id"], name: "index_invoices_on_user_id"
+    t.check_constraint "payment_amount > 0::numeric", name: "invoices_payment_amount_positive"
+  end
+
   add_foreign_key "account_password_hashes", "accounts", on_delete: :cascade
+  add_foreign_key "invoices", "accounts", column: "user_id", on_delete: :cascade
 end
