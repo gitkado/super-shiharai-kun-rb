@@ -4,9 +4,9 @@
 
 ## 実装フェーズ
 
-### フェーズ1: 基盤準備
+### フェーズ1: 基盤準備 ✅ 完了
 
-- [ ] **ディレクトリ構造作成**
+- [x] **ディレクトリ構造作成**
 
   ```bash
   mkdir -p app/packages/invoice/app/controllers/api/v1
@@ -15,7 +15,9 @@
   mkdir -p app/packages/invoice/spec/requests/api/v1
   ```
 
-- [ ] **package.yml 作成**
+  **実施結果:** 2025-11-17 20:04 完了
+
+- [x] **package.yml 作成**
   - ファイル: `app/packages/invoice/package.yml`
   - 内容:
 
@@ -30,7 +32,9 @@
     public_path: app/public
     ```
 
-- [ ] **AppConfig設定追加**
+  **実施結果:** 2025-11-17 20:05 完了
+
+- [x] **AppConfig設定追加**
   - ファイル: `config/app_config.rb`
   - 以下のメソッドを追加:
 
@@ -52,7 +56,9 @@
     end
     ```
 
-- [ ] **環境変数設定**
+  **実施結果:** 2025-11-17 20:05 完了
+
+- [x] **環境変数設定**
   - `.env.example` に追加:
 
     ```bash
@@ -65,7 +71,9 @@
 
   - `.env` ファイルに同じ内容を追加（Git管理外）
 
-- [ ] **検証コマンド:**
+  **実施結果:** 2025-11-17 20:05 完了
+
+- [x] **検証コマンド:**
 
   ```bash
   # ディレクトリ構造確認
@@ -78,16 +86,21 @@
   grep INVOICE .env.example
   ```
 
+  **実施結果:** 2025-11-17 20:05 完了
+  - ディレクトリ構造: OK
+  - Packwerk検証: Validation successful 🎉
+  - 環境変数: OK
+
 - [ ] **コミット:** `chore(config): 請求書管理用環境変数を追加`
 
 ---
 
-### フェーズ2: 値オブジェクト実装
+### フェーズ2: 値オブジェクト実装 ✅ 完了
 
 #### 2-1. Money 値オブジェクト
 
-- [ ] **Moneyクラス作成**
-  - ファイル: `app/packages/invoice/app/models/money.rb`
+- [x] **Invoice::Moneyクラス作成**
+  - ファイル: `app/packages/invoice/app/models/invoice/money.rb`
   - 内容:
 
     ```ruby
@@ -95,7 +108,8 @@
 
     # 金額を表す値オブジェクト
     # 責務: BigDecimalによる精度保証、演算メソッド提供、ActiveRecord統合
-    class Money
+    # 名前空間: Invoice::Money（他gemとの衝突を防ぐため）
+    class Invoice::Money
       include Comparable
 
       attr_reader :value
@@ -106,21 +120,21 @@
 
       # 加算
       def +(other)
-        Money.new(@value + other.value)
+        Invoice::Money.new(@value + other.value)
       end
 
       # 減算
       def -(other)
-        Money.new(@value - other.value)
+        Invoice::Money.new(@value - other.value)
       end
 
       # 乗算（料率との掛け算）
       def *(rate)
         case rate
-        when Rate
-          Money.new(@value * rate.value)
+        when Invoice::Rate
+          Invoice::Money.new(@value * rate.value)
         when Numeric
-          Money.new(@value * rate)
+          Invoice::Money.new(@value * rate)
         else
           raise ArgumentError, "Cannot multiply Money by #{rate.class}"
         end
@@ -139,10 +153,10 @@
       class Type < ActiveRecord::Type::Value
         def cast(value)
           case value
-          when Money
+          when Invoice::Money
             value
           when Numeric, String
-            Money.new(value)
+            Invoice::Money.new(value)
           else
             nil
           end
@@ -153,40 +167,42 @@
         end
 
         def deserialize(value)
-          value ? Money.new(value) : nil
+          value ? Invoice::Money.new(value) : nil
         end
       end
     end
     ```
 
-- [ ] **Moneyユニットテスト作成**
-  - ファイル: `app/packages/invoice/spec/models/money_spec.rb`
+  **実施結果:** 2025-11-17 20:08 完了
+
+- [x] **Invoice::Moneyユニットテスト作成**
+  - ファイル: `app/packages/invoice/spec/models/invoice/money_spec.rb`
   - 内容:
 
     ```ruby
     require "rails_helper"
 
-    RSpec.describe Money, type: :model do
+    RSpec.describe Invoice::Money, type: :model do
       describe "#initialize" do
         it "creates Money from integer" do
-          money = Money.new(100)
+          money = Invoice::Money.new(100)
           expect(money.value).to eq(BigDecimal("100.00"))
         end
 
         it "creates Money from string" do
-          money = Money.new("100.50")
+          money = Invoice::Money.new("100.50")
           expect(money.value).to eq(BigDecimal("100.50"))
         end
 
         it "rounds to 2 decimal places" do
-          money = Money.new("100.999")
+          money = Invoice::Money.new("100.999")
           expect(money.value).to eq(BigDecimal("101.00"))
         end
       end
 
       describe "arithmetic operations" do
-        let(:money1) { Money.new(100) }
-        let(:money2) { Money.new(50) }
+        let(:money1) { Invoice::Money.new(100) }
+        let(:money2) { Invoice::Money.new(50) }
 
         it "adds two Money objects" do
           result = money1 + money2
@@ -199,7 +215,7 @@
         end
 
         it "multiplies Money by Rate" do
-          rate = Rate.new(0.04)
+          rate = Invoice::Rate.new(0.04)
           result = money1 * rate
           expect(result.value).to eq(BigDecimal("4.00"))
         end
@@ -212,61 +228,65 @@
 
       describe "comparison" do
         it "compares Money objects" do
-          expect(Money.new(100)).to be > Money.new(50)
-          expect(Money.new(50)).to be < Money.new(100)
-          expect(Money.new(100)).to eq(Money.new(100))
+          expect(Invoice::Money.new(100)).to be > Invoice::Money.new(50)
+          expect(Invoice::Money.new(50)).to be < Invoice::Money.new(100)
+          expect(Invoice::Money.new(100)).to eq(Invoice::Money.new(100))
         end
       end
 
       describe "#to_s" do
         it "returns string representation with 2 decimal places" do
-          money = Money.new("100.50")
+          money = Invoice::Money.new("100.50")
           expect(money.to_s).to eq("100.50")
         end
 
         it "returns string with trailing zeros" do
-          money = Money.new("100")
+          money = Invoice::Money.new("100")
           expect(money.to_s).to eq("100.00")
         end
       end
 
       describe "ActiveRecord Type" do
         it "casts string to Money" do
-          type = Money::Type.new
+          type = Invoice::Money::Type.new
           result = type.cast("100.50")
-          expect(result).to be_a(Money)
+          expect(result).to be_a(Invoice::Money)
           expect(result.value).to eq(BigDecimal("100.50"))
         end
 
         it "serializes Money to BigDecimal" do
-          type = Money::Type.new
-          money = Money.new(100)
+          type = Invoice::Money::Type.new
+          money = Invoice::Money.new(100)
           result = type.serialize(money)
           expect(result).to eq(BigDecimal("100.00"))
         end
 
         it "deserializes BigDecimal to Money" do
-          type = Money::Type.new
+          type = Invoice::Money::Type.new
           result = type.deserialize(BigDecimal("100.50"))
-          expect(result).to be_a(Money)
+          expect(result).to be_a(Invoice::Money)
           expect(result.value).to eq(BigDecimal("100.50"))
         end
       end
     end
     ```
 
-- [ ] **テスト実行**
+  **実施結果:** 2025-11-17 20:08 完了
+
+- [x] **テスト実行**
 
   ```bash
-  bundle exec rspec app/packages/invoice/spec/models/money_spec.rb
+  bundle exec rspec app/packages/invoice/spec/models/invoice/money_spec.rb
   ```
 
-- [ ] **コミット:** `feat(pack-invoice): Money値オブジェクトを追加`
+  **実施結果:** 2025-11-17 20:10 完了 - 全テストパス（76 examples, 0 failures）
+
+- [ ] **コミット:** `feat(pack-invoice): Invoice::Money値オブジェクトを追加`
 
 #### 2-2. Rate 値オブジェクト
 
-- [ ] **Rateクラス作成**
-  - ファイル: `app/packages/invoice/app/models/rate.rb`
+- [x] **Invoice::Rateクラス作成**
+  - ファイル: `app/packages/invoice/app/models/invoice/rate.rb`
   - 内容:
 
     ```ruby
@@ -274,7 +294,8 @@
 
     # 料率（割合）を表す値オブジェクト
     # 責務: BigDecimalによる精度保証（小数点4桁）、ActiveRecord統合
-    class Rate
+    # 名前空間: Invoice::Rate（他gemとの衝突を防ぐため）
+    class Invoice::Rate
       include Comparable
 
       attr_reader :value
@@ -301,10 +322,10 @@
       class Type < ActiveRecord::Type::Value
         def cast(value)
           case value
-          when Rate
+          when Invoice::Rate
             value
           when Numeric, String
-            Rate.new(value)
+            Invoice::Rate.new(value)
           else
             nil
           end
@@ -315,113 +336,121 @@
         end
 
         def deserialize(value)
-          value ? Rate.new(value) : nil
+          value ? Invoice::Rate.new(value) : nil
         end
       end
     end
     ```
 
-- [ ] **Rateユニットテスト作成**
-  - ファイル: `app/packages/invoice/spec/models/rate_spec.rb`
+  **実施結果:** 2025-11-17 20:09 完了
+
+- [x] **Invoice::Rateユニットテスト作成**
+  - ファイル: `app/packages/invoice/spec/models/invoice/rate_spec.rb`
   - 内容:
 
     ```ruby
     require "rails_helper"
 
-    RSpec.describe Rate, type: :model do
+    RSpec.describe Invoice::Rate, type: :model do
       describe "#initialize" do
         it "creates Rate from float" do
-          rate = Rate.new(0.04)
+          rate = Invoice::Rate.new(0.04)
           expect(rate.value).to eq(BigDecimal("0.0400"))
         end
 
         it "creates Rate from string" do
-          rate = Rate.new("0.1234")
+          rate = Invoice::Rate.new("0.1234")
           expect(rate.value).to eq(BigDecimal("0.1234"))
         end
 
         it "rounds to 4 decimal places" do
-          rate = Rate.new("0.12345")
+          rate = Invoice::Rate.new("0.12345")
           expect(rate.value).to eq(BigDecimal("0.1235"))
         end
       end
 
       describe "comparison" do
         it "compares Rate objects" do
-          expect(Rate.new(0.1)).to be > Rate.new(0.05)
-          expect(Rate.new(0.05)).to be < Rate.new(0.1)
-          expect(Rate.new(0.1)).to eq(Rate.new(0.1))
+          expect(Invoice::Rate.new(0.1)).to be > Invoice::Rate.new(0.05)
+          expect(Invoice::Rate.new(0.05)).to be < Invoice::Rate.new(0.1)
+          expect(Invoice::Rate.new(0.1)).to eq(Invoice::Rate.new(0.1))
         end
       end
 
       describe "#to_s" do
         it "returns string representation with 4 decimal places" do
-          rate = Rate.new(0.04)
+          rate = Invoice::Rate.new(0.04)
           expect(rate.to_s).to eq("0.0400")
         end
 
         it "returns string with trailing zeros" do
-          rate = Rate.new(0.1)
+          rate = Invoice::Rate.new(0.1)
           expect(rate.to_s).to eq("0.1000")
         end
       end
 
       describe "#to_percent" do
         it "returns percentage representation with 2 decimal places" do
-          rate = Rate.new(0.04)
+          rate = Invoice::Rate.new(0.04)
           expect(rate.to_percent).to eq("4.00")
         end
 
         it "returns percentage with trailing zeros" do
-          rate = Rate.new(0.1)
+          rate = Invoice::Rate.new(0.1)
           expect(rate.to_percent).to eq("10.00")
         end
       end
 
       describe "ActiveRecord Type" do
         it "casts string to Rate" do
-          type = Rate::Type.new
+          type = Invoice::Rate::Type.new
           result = type.cast("0.04")
-          expect(result).to be_a(Rate)
+          expect(result).to be_a(Invoice::Rate)
           expect(result.value).to eq(BigDecimal("0.0400"))
         end
 
         it "serializes Rate to BigDecimal" do
-          type = Rate::Type.new
-          rate = Rate.new(0.04)
+          type = Invoice::Rate::Type.new
+          rate = Invoice::Rate.new(0.04)
           result = type.serialize(rate)
           expect(result).to eq(BigDecimal("0.0400"))
         end
 
         it "deserializes BigDecimal to Rate" do
-          type = Rate::Type.new
+          type = Invoice::Rate::Type.new
           result = type.deserialize(BigDecimal("0.1000"))
-          expect(result).to be_a(Rate)
+          expect(result).to be_a(Invoice::Rate)
           expect(result.value).to eq(BigDecimal("0.1000"))
         end
       end
     end
     ```
 
-- [ ] **テスト実行**
+  **実施結果:** 2025-11-17 20:09 完了
+
+- [x] **テスト実行**
 
   ```bash
-  bundle exec rspec app/packages/invoice/spec/models/rate_spec.rb
+  bundle exec rspec app/packages/invoice/spec/models/invoice/rate_spec.rb
   ```
 
-- [ ] **コミット:** `feat(pack-invoice): Rate値オブジェクトを追加`
+  **実施結果:** 2025-11-17 20:10 完了 - 全テストパス（76 examples, 0 failures）
+
+- [ ] **コミット:** `feat(pack-invoice): Invoice::Rate値オブジェクトを追加`
 
 ---
 
-### フェーズ3: マイグレーション作成・実行
+### フェーズ3: マイグレーション作成・実行 ✅ 完了
 
-- [ ] **マイグレーション生成**
+- [x] **マイグレーション生成**
   ```bash
   bin/rails generate migration CreateInvoices
   ```
 
-- [ ] **マイグレーションファイル編集**
-  - ファイル: `db/migrate/YYYYMMDDHHMMSS_create_invoices.rb`
+  **実施結果:** 2025-11-17 20:19 完了 - `db/migrate/20251117111943_create_invoices.rb` 生成
+
+- [x] **マイグレーションファイル編集**
+  - ファイル: `db/migrate/20251117111943_create_invoices.rb`
   - 内容:
     ```ruby
     class CreateInvoices < ActiveRecord::Migration[7.2]
@@ -461,7 +490,9 @@
     end
     ```
 
-- [ ] **マイグレーション実行**
+  **実施結果:** 2025-11-17 20:20 完了
+
+- [x] **マイグレーション実行**
   ```bash
   # 開発環境
   bin/rails db:migrate
@@ -470,7 +501,11 @@
   RAILS_ENV=test bin/rails db:migrate
   ```
 
-- [ ] **検証コマンド:**
+  **実施結果:** 2025-11-17 20:26 完了
+  - 開発環境: migrated (0.0317s)
+  - テスト環境: migrated (0.0188s)
+
+- [x] **検証コマンド:**
 
   ```bash
   # テーブルが作成されたか確認
@@ -480,14 +515,18 @@
   grep -A 20 "create_table \"invoices\"" db/schema.rb
   ```
 
+  **実施結果:** 2025-11-17 20:26 完了
+  - テーブル作成: true
+  - スキーマ確認: OK（外部キー制約、インデックス、CHECK制約すべて正常）
+
 - [ ] **コミット:** `chore(migration): invoicesテーブルを追加`
 - [ ] **コミット:** `chore(schema): schema.rbを更新`
 
 ---
 
-### フェーズ4: Invoiceモデル実装
+### フェーズ4: Invoiceモデル実装 ✅ 完了
 
-- [ ] **Invoiceモデル作成**
+- [x] **Invoiceモデル作成**
   - ファイル: `app/packages/invoice/app/models/invoice.rb`
   - 内容:
 
@@ -551,7 +590,9 @@
     end
     ```
 
-- [ ] **Invoiceユニットテスト作成**
+  **実施結果:** 2025-11-17 20:31 完了
+
+- [x] **Invoiceユニットテスト作成**
   - ファイル: `app/packages/invoice/spec/models/invoice_spec.rb`
   - 内容:
 
@@ -567,7 +608,7 @@
           Invoice.new(
             user_id: account.id,
             issue_date: Date.today,
-            payment_amount: Money.new(100000),
+            payment_amount: Invoice::Money.new(100000),
             payment_due_date: Date.today + 30.days
           )
         }
@@ -707,7 +748,7 @@
           Invoice.create!(
             user_id: account.id,
             issue_date: Date.today,
-            payment_amount: Money.new(100000),
+            payment_amount: Invoice::Money.new(100000),
             payment_due_date: Date.new(2025, 1, 15)
           )
           Invoice.create!(
@@ -742,11 +783,15 @@
     end
     ```
 
-- [ ] **テスト実行**
+  **実施結果:** 2025-11-17 20:31 完了
+
+- [x] **テスト実行**
 
   ```bash
   bundle exec rspec app/packages/invoice/spec/models/invoice_spec.rb
   ```
+
+  **実施結果:** 2025-11-17 20:34 完了 - 全テストパス（91 examples, 0 failures）
 
 - [ ] **コミット:** `feat(pack-invoice): Invoiceモデルを追加`
 - [ ] **コミット:** `test(pack-invoice): Invoiceモデルのユニットテストを追加`
@@ -1019,7 +1064,7 @@
         Invoice.create!(
           user_id: account.id,
           issue_date: Date.today,
-          payment_amount: Money.new(100000),
+          payment_amount: Invoice::Money.new(100000),
           payment_due_date: Date.new(2025, 1, 15)
         )
         Invoice.create!(

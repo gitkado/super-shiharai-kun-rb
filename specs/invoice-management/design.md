@@ -7,7 +7,7 @@
 | 項目 | 選定技術 | 理由 |
 |------|---------|------|
 | **パッケージ配置** | `app/packages/invoice/` | モジュラーモノリスの原則に従い独立ドメインとして配置 |
-| **値オブジェクト** | ActiveRecord Attributes | Kotlinの `Money`, `Rate` をRuby/Railsで再現、型安全性を確保 |
+| **値オブジェクト** | ActiveRecord Attributes | Kotlinの `Money`, `Rate` をRuby/Railsで再現、型安全性を確保<br/>`Invoice::Money`, `Invoice::Rate` で名前空間衝突を回避 |
 | **金額管理** | `decimal(15, 2)` | 浮動小数点誤差を回避、最大999兆円対応 |
 | **料率管理** | `decimal(5, 4)` | 0.0001単位の精度（例: 0.0400 = 4%） |
 | **手数料計算** | `before_validation` コールバック | Fat Model方針、バリデーション前に自動計算 |
@@ -21,10 +21,11 @@
    - Model: バリデーション・計算ロジック・永続化を管理
 
 2. **値オブジェクトによる型安全性**
-   - `Money`: 金額を表す値オブジェクト（`BigDecimal` ラッパー）
-   - `Rate`: 料率を表す値オブジェクト（`BigDecimal` ラッパー）
+   - `Invoice::Money`: 金額を表す値オブジェクト（`BigDecimal` ラッパー）
+   - `Invoice::Rate`: 料率を表す値オブジェクト（`BigDecimal` ラッパー）
    - ActiveRecord Attributesで自動シリアライズ/デシリアライズ
-   - 演算メソッド（`Money * Rate`, `Money + Money`）を提供
+   - 演算メソッド（`Invoice::Money * Invoice::Rate`, `Invoice::Money + Invoice::Money`）を提供
+   - **名前空間化の理由:** [money gem](https://github.com/RubyMoney/money) など他gemとの衝突を防ぐため
 
 3. **Packwerk境界の尊重**
    - `invoice` パッケージは `authentication` パッケージに依存
@@ -53,14 +54,16 @@ app/packages/invoice/
 │   │           └── invoices_controller.rb  # 請求書API（JWT認証必須）
 │   ├── models/
 │   │   ├── invoice.rb                      # 請求書モデル（Fat Model）
-│   │   ├── money.rb                        # 値オブジェクト（金額）
-│   │   └── rate.rb                         # 値オブジェクト（料率）
+│   │   └── invoice/
+│   │       ├── money.rb                    # 値オブジェクト（金額） - Invoice::Money
+│   │       └── rate.rb                     # 値オブジェクト（料率） - Invoice::Rate
 │   └── public/                             # 公開API（今回は未使用）
 └── spec/
     ├── models/
     │   ├── invoice_spec.rb                 # ユニットテスト
-    │   ├── money_spec.rb                   # 値オブジェクトテスト
-    │   └── rate_spec.rb                    # 値オブジェクトテスト
+    │   └── invoice/
+    │       ├── money_spec.rb               # 値オブジェクトテスト
+    │       └── rate_spec.rb                # 値オブジェクトテスト
     └── requests/
         └── api/
             └── v1/
@@ -94,12 +97,12 @@ public_path: app/public
 ```ruby
 class Invoice < ApplicationRecord
   # ActiveRecord Attributes（値オブジェクト）
-  attribute :payment_amount, Money::Type.new
-  attribute :fee, Money::Type.new
-  attribute :fee_rate, Rate::Type.new
-  attribute :tax_amount, Money::Type.new
-  attribute :tax_rate, Rate::Type.new
-  attribute :total_amount, Money::Type.new
+  attribute :payment_amount, Invoice::Money::Type.new
+  attribute :fee, Invoice::Money::Type.new
+  attribute :fee_rate, Invoice::Rate::Type.new
+  attribute :tax_amount, Invoice::Money::Type.new
+  attribute :tax_rate, Invoice::Rate::Type.new
+  attribute :total_amount, Invoice::Money::Type.new
 
   # バリデーション
   validates :user_id, presence: true
@@ -121,8 +124,8 @@ class Invoice < ApplicationRecord
 
   # 手数料・税額・合計金額を自動計算
   def calculate_fees_and_taxes
-    self.fee_rate ||= Rate.new(AppConfig.invoice_fee_rate)
-    self.tax_rate ||= Rate.new(AppConfig.invoice_tax_rate)
+    self.fee_rate ||= Invoice::Rate.new(AppConfig.invoice_fee_rate)
+    self.tax_rate ||= Invoice::Rate.new(AppConfig.invoice_tax_rate)
 
     self.fee = payment_amount * fee_rate.value
     self.tax_amount = fee * tax_rate.value
@@ -161,17 +164,18 @@ end
 - `created_at` (timestamp, NOT NULL)
 - `updated_at` (timestamp, NOT NULL)
 
-### 2. Money (`app/models/money.rb`)
+### 2. Invoice::Money (`app/models/invoice/money.rb`)
 
 **責務:**
 - 金額を表す値オブジェクト
 - `BigDecimal` による精度保証
 - 演算メソッド提供（`+`, `-`, `*`）
 - ActiveRecord Attributesとの統合
+- **名前空間:** `Invoice::Money`（他gemとの衝突を防ぐため）
 
 **実装例:**
 ```ruby
-class Money
+class Invoice::Money
   include Comparable
 
   attr_reader :value
@@ -182,21 +186,21 @@ class Money
 
   # 加算
   def +(other)
-    Money.new(@value + other.value)
+    Invoice::Money.new(@value + other.value)
   end
 
   # 減算
   def -(other)
-    Money.new(@value - other.value)
+    Invoice::Money.new(@value - other.value)
   end
 
   # 乗算（料率との掛け算）
   def *(rate)
     case rate
-    when Rate
-      Money.new(@value * rate.value)
+    when Invoice::Rate
+      Invoice::Money.new(@value * rate.value)
     when Numeric
-      Money.new(@value * rate)
+      Invoice::Money.new(@value * rate)
     else
       raise ArgumentError, "Cannot multiply Money by #{rate.class}"
     end
@@ -215,10 +219,10 @@ class Money
   class Type < ActiveRecord::Type::Value
     def cast(value)
       case value
-      when Money
+      when Invoice::Money
         value
       when Numeric, String
-        Money.new(value)
+        Invoice::Money.new(value)
       else
         nil
       end
@@ -229,22 +233,23 @@ class Money
     end
 
     def deserialize(value)
-      value ? Money.new(value) : nil
+      value ? Invoice::Money.new(value) : nil
     end
   end
 end
 ```
 
-### 3. Rate (`app/models/rate.rb`)
+### 3. Invoice::Rate (`app/models/invoice/rate.rb`)
 
 **責務:**
 - 料率（割合）を表す値オブジェクト
 - `BigDecimal` による精度保証（小数点4桁）
 - ActiveRecord Attributesとの統合
+- **名前空間:** `Invoice::Rate`（他gemとの衝突を防ぐため）
 
 **実装例:**
 ```ruby
-class Rate
+class Invoice::Rate
   include Comparable
 
   attr_reader :value
@@ -271,10 +276,10 @@ class Rate
   class Type < ActiveRecord::Type::Value
     def cast(value)
       case value
-      when Rate
+      when Invoice::Rate
         value
       when Numeric, String
-        Rate.new(value)
+        Invoice::Rate.new(value)
       else
         nil
       end
@@ -285,7 +290,7 @@ class Rate
     end
 
     def deserialize(value)
-      value ? Rate.new(value) : nil
+      value ? Invoice::Rate.new(value) : nil
     end
   end
 end
@@ -568,7 +573,7 @@ graph TD
 
 ### 1. ユニットテスト（Model層）
 
-**対象:** `Invoice`, `Money`, `Rate`
+**対象:** `Invoice`, `Invoice::Money`, `Invoice::Rate`
 
 **テストケース（Invoice）:**
 - バリデーション
@@ -584,14 +589,14 @@ graph TD
   - `between_payment_due_dates` の動作確認
   - 開始日・終了日の境界値テスト
 
-**テストケース（Money）:**
+**テストケース（Invoice::Money）:**
 - 初期化（文字列、数値、BigDecimal）
 - 演算（加算、減算、乗算）
 - 比較（`<`, `>`, `==`）
 - 丸め（小数点2桁）
 - ActiveRecord Attributes統合
 
-**テストケース（Rate）:**
+**テストケース（Invoice::Rate）:**
 - 初期化（文字列、数値、BigDecimal）
 - 比較（`<`, `>`, `==`）
 - 丸め（小数点4桁）
@@ -650,6 +655,8 @@ graph TD
 ```bash
 # ユニットテストのみ
 bundle exec rspec app/packages/invoice/spec/models/
+# または
+bundle exec rspec app/packages/invoice/spec/models/invoice/
 
 # リクエストテストのみ
 bundle exec rspec app/packages/invoice/spec/requests/
@@ -758,8 +765,8 @@ flowchart TB
     subgraph InvoicePackage["app/packages/invoice"]
         InvoiceCtrl[InvoicesController]
         InvoiceModel[Invoice Model]
-        MoneyVO[Money 値オブジェクト]
-        RateVO[Rate 値オブジェクト]
+        MoneyVO[Invoice::Money 値オブジェクト]
+        RateVO[Invoice::Rate 値オブジェクト]
     end
 
     subgraph AuthPackage["app/packages/authentication"]
