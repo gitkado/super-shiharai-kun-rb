@@ -35,3 +35,6 @@
 
 # Ignore Docker volumes
 /postgres_data
+
+# Ignore IDE settings
+/.idea

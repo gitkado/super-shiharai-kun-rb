@@ -1,0 +1,8 @@
+enforce_dependencies: true
+enforce_privacy: true
+
+dependencies:
+  - "."  # ルートパッケージ（ApplicationControllerなど）
+  - "app/packages/authentication"  # JWT認証機能
+
+public_path: app/public

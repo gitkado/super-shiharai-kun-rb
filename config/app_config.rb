@@ -36,6 +36,14 @@ module AppConfig
     env_set?("CI")
   end
 
+  def invoice_fee_rate(default_value = 0.04)
+    fetch_float("INVOICE_FEE_RATE", default_value)
+  end
+
+  def invoice_tax_rate(default_value = 0.10)
+    fetch_float("INVOICE_TAX_RATE", default_value)
+  end
+
   class << self
     private
 
@@ -46,6 +54,10 @@ module AppConfig
 
     def fetch_integer(key, default_value)
       ENV.fetch(key, default_value).to_i
+    end
+
+    def fetch_float(key, default_value)
+      ENV.fetch(key, default_value).to_f
     end
   end
 end
