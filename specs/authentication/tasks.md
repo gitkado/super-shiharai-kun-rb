@@ -514,10 +514,11 @@ bin/rails routes | grep "auth/"
 
 ---
 
-### フェーズ7: 公開API実装
+### フェーズ7: 公開API実装 ✅ 完了
 
-- [ ] **Authenticatable concern作成**
+- [x] **Authenticatable concern作成**
   - ファイル: `app/packages/authentication/app/public/authentication/authenticatable.rb`
+  - **実施結果:** 2025-01-03 完了
   - 内容:
     ```ruby
     module Authentication
@@ -532,15 +533,13 @@ bin/rails routes | grep "auth/"
 
         def authenticate_account!
           token = extract_token_from_header
-
           return unauthorized_response unless token
 
-          payload = decode_jwt(token)
-          @current_account = Account.find_by(id: payload["account_id"])
+          payload = Authentication::JwtService.decode(token)
+          return unauthorized_response unless payload
 
+          @current_account = Account.find_by(id: payload["account_id"])
           unauthorized_response unless @current_account
-        rescue JWT::DecodeError, JWT::ExpiredSignature
-          unauthorized_response
         end
 
         def extract_token_from_header
@@ -548,21 +547,12 @@ bin/rails routes | grep "auth/"
           header&.split(" ")&.last if header&.start_with?("Bearer ")
         end
 
-        def decode_jwt(token)
-          JWT.decode(
-            token,
-            ENV.fetch("JWT_SECRET_KEY"),
-            true,
-            algorithm: "HS256"
-          ).first
-        end
-
         def unauthorized_response
           render json: {
             error: {
               code: "UNAUTHORIZED",
               message: "Invalid or expired token",
-              trace_id: request.trace_id
+              trace_id: SemanticLogger.named_tags[:trace_id]
             }
           }, status: :unauthorized
 
@@ -572,22 +562,27 @@ bin/rails routes | grep "auth/"
     end
     ```
 
-- [ ] **ApplicationControllerに組み込み**
+- [x] **ApplicationControllerに組み込み**
   - ファイル: `app/controllers/application_controller.rb`
+  - **実施結果:** 2025-01-03 完了
   - 追加内容:
     ```ruby
     class ApplicationController < ActionController::API
-      include Authentication::Authenticatable  # 追加
-
-      # 各コントローラーで必要に応じて有効化
-      # before_action :authenticate_account!
+      include ErrorHandling
+      include Authentication::Authenticatable
     end
     ```
 
-- [ ] **検証コマンド:**
+- [x] **検証コマンド:**
+
   ```bash
   # ApplicationControllerが正常に読み込まれるか確認
   RAILS_ENV=test bin/rails runner "puts ApplicationController.ancestors.include?(Authentication::Authenticatable)"
+  # ✅ true
+
+  # 請求書APIで認証が動作することを確認
+  bundle exec rspec app/packages/invoice/spec/requests/api/v1/invoices_create_spec.rb
+  # ✅ 7 examples, 0 failures
   ```
 
 - [ ] **コミット:** `feat(pack-authentication): 認証concernを追加`

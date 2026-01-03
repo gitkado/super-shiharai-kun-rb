@@ -798,144 +798,87 @@
 
 ---
 
-### フェーズ5: Controller実装
+### フェーズ5: Controller実装 ✅ 完了（部分実装）
 
-- [ ] **InvoicesController作成**
+- [x] **InvoicesController作成**
   - ファイル: `app/packages/invoice/app/controllers/api/v1/invoices_controller.rb`
-  - 内容:
+  - **実施結果:** 2025-11-30 完了
+  - **実装内容:**
+    - POST /api/v1/invoices（請求書登録）実装済み
+    - JWT認証（`before_action :authenticate_account!`）実装済み
+    - Strong Parameters実装済み
+    - エラーハンドリング実装済み
+  - **未実装:**
+    - GET /api/v1/invoices（一覧取得）は未実装
 
-    ```ruby
-    # frozen_string_literal: true
-
-    # 請求書管理API
-    # 責務: JWT認証、パラメータ受け取り、エラーハンドリング、レスポンス整形
-    module Api
-      module V1
-        class InvoicesController < ApplicationController
-          before_action :authenticate_account!
-
-          # POST /api/v1/invoices
-          def create
-            invoice = Invoice.new(invoice_params.merge(user_id: current_account.id))
-
-            if invoice.save
-              render json: invoice_json(invoice), status: :created
-            else
-              render json: {
-                error: {
-                  code: "INVOICE_CREATION_FAILED",
-                  message: invoice.errors.full_messages.join(", "),
-                  trace_id: trace_id
-                }
-              }, status: :unprocessable_entity
-            end
-          end
-
-          # GET /api/v1/invoices
-          def index
-            invoices = Invoice.where(user_id: current_account.id)
-
-            # 支払期限での期間検索
-            if params[:start_date] && params[:end_date]
-              invoices = invoices.between_payment_due_dates(
-                Date.parse(params[:start_date]),
-                Date.parse(params[:end_date])
-              )
-            end
-
-            render json: { invoices: invoices.map { |i| invoice_json(i) } }
-          rescue Date::Error
-            render json: {
-              error: {
-                code: "INVALID_DATE_FORMAT",
-                message: "Invalid date format. Use YYYY-MM-DD.",
-                trace_id: trace_id
-              }
-            }, status: :bad_request
-          end
-
-          private
-
-          def invoice_params
-            params.permit(:issue_date, :payment_amount, :payment_due_date)
-          end
-
-          def invoice_json(invoice)
-            {
-              id: invoice.id,
-              user_id: invoice.user_id,
-              issue_date: invoice.issue_date.to_s,
-              payment_amount: invoice.payment_amount.to_s,
-              fee: invoice.fee.to_s,
-              fee_rate: invoice.fee_rate.to_s,
-              tax_amount: invoice.tax_amount.to_s,
-              tax_rate: invoice.tax_rate.to_s,
-              total_amount: invoice.total_amount.to_s,
-              payment_due_date: invoice.payment_due_date.to_s,
-              created_at: invoice.created_at.iso8601,
-              updated_at: invoice.updated_at.iso8601
-            }
-          end
-
-          def trace_id
-            SemanticLogger.named_tags[:trace_id]
-          end
-        end
-      end
-    end
-    ```
-
-- [ ] **ApplicationControllerに認証concernを追加**
+- [x] **ApplicationControllerに認証concernを追加**
   - ファイル: `app/controllers/application_controller.rb`
-  - 追加内容:
+  - **実施結果:** 認証パッケージ側で実装済み
+  - 内容:
     ```ruby
     class ApplicationController < ActionController::API
       include ErrorHandling
-      include Authentication::Authenticatable  # 追加
-
-      attr_reader :current_account  # 追加
+      include Authentication::Authenticatable
     end
     ```
 
-- [ ] **ルーティング追加**
+- [x] **ルーティング追加**
   - ファイル: `config/routes.rb`
+  - **実施結果:** 2025-11-30 完了
   - 追加内容:
-
     ```ruby
     namespace :api do
       namespace :v1 do
-        resources :invoices, only: [:create, :index]
+        resources :invoices, only: [:create]  # POSTのみ
       end
     end
     ```
 
-- [ ] **検証コマンド:**
+- [x] **検証コマンド:**
 
   ```bash
   # ルート確認
   bin/rails routes | grep invoices
-  # => POST /api/v1/invoices api/v1/invoices#create
-  # => GET  /api/v1/invoices api/v1/invoices#index
+  # ✅ POST /api/v1/invoices api/v1/invoices#create
 
-  # Railsが起動できるか確認
-  RAILS_ENV=test bin/rails runner "puts 'Rails loaded successfully'"
+  # RuboCop
+  bundle exec rubocop app/packages/invoice/
+  # ✅ 8 files inspected, no offenses detected
+
+  # Packwerk
+  bundle exec packwerk check app/packages/invoice/
+  # ✅ No offenses detected
   ```
 
-- [ ] **コミット:** `feat(pack-invoice): InvoicesControllerを追加`
-- [ ] **コミット:** `chore(routes): 請求書APIルーティングを追加`
-- [ ] **コミット:** `refactor(app): ApplicationControllerに認証concernを追加`
+- [ ] **コミット:** `feat(pack-invoice): InvoicesController#createを追加`
+- [ ] **コミット:** `chore(routes): 請求書登録APIルーティングを追加`
 
 ---
 
-### フェーズ6: リクエストスペック実装
+### フェーズ6: リクエストスペック実装 ✅ 完了（部分実装）
 
-- [ ] **テストディレクトリ作成**
+- [x] **テストディレクトリ作成**
+
   ```bash
   mkdir -p app/packages/invoice/spec/requests/api/v1
   ```
 
-- [ ] **InvoicesController リクエストスペック**
-  - ファイル: `app/packages/invoice/spec/requests/api/v1/invoices_spec.rb`
+  **実施結果:** 2025-11-30 完了
+
+- [x] **InvoicesController リクエストスペック（POST /api/v1/invoices）**
+  - ファイル: `app/packages/invoice/spec/requests/api/v1/invoices_create_spec.rb`
+  - **実施結果:** 2025-11-30 完了
+  - **テストケース（7件、全てパス）:**
+    - ✅ 正常系: 請求書作成と手数料計算
+    - ✅ 正常系: カスタム料率での計算
+    - ✅ 異常系: JWT未提供エラー
+    - ✅ 異常系: 無効なJWTエラー
+    - ✅ 異常系: payment_amount未入力エラー
+    - ✅ 異常系: payment_amount負の値エラー
+    - ✅ 異常系: payment_due_date が issue_date より前エラー
+
+- [ ] **InvoicesController リクエストスペック（GET /api/v1/invoices）**
+  - ファイル: `app/packages/invoice/spec/requests/api/v1/invoices_index_spec.rb`（未作成）
   - 内容:
     ```ruby
     require "rails_helper"
