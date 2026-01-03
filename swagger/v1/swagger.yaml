@@ -141,6 +141,233 @@ paths:
               required:
               - email
               - password
+  "/api/v1/invoices":
+    post:
+      summary: 請求書を登録する
+      tags:
+      - Invoices
+      description: 請求書を登録し、手数料・税額を自動計算します
+      security:
+      - bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Bearer <JWT>
+        example: Bearer eyJhbGciOiJIUzI1NiJ9...
+        schema:
+          type: string
+      responses:
+        '201':
+          description: 請求書作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  user_id:
+                    type: integer
+                    example: 1
+                  issue_date:
+                    type: string
+                    format: date
+                    example: '2025-01-15'
+                  payment_amount:
+                    type: string
+                    example: '100000.00'
+                  fee:
+                    type: string
+                    description: 手数料（自動計算）
+                    example: '4000.00'
+                  fee_rate:
+                    type: string
+                    description: 手数料率
+                    example: '0.0400'
+                  tax_amount:
+                    type: string
+                    description: 消費税額（自動計算）
+                    example: '400.00'
+                  tax_rate:
+                    type: string
+                    description: 消費税率
+                    example: '0.1000'
+                  total_amount:
+                    type: string
+                    description: 合計金額（payment_amount + fee + tax_amount）
+                    example: '104400.00'
+                  payment_due_date:
+                    type: string
+                    format: date
+                    example: '2025-02-28'
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: '2025-01-15T10:30:00Z'
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: '2025-01-15T10:30:00Z'
+                required:
+                - id
+                - user_id
+                - issue_date
+                - payment_amount
+                - fee
+                - fee_rate
+                - tax_amount
+                - tax_rate
+                - total_amount
+                - payment_due_date
+                - created_at
+                - updated_at
+        '401':
+          description: 認証エラー（JWT未提供または無効）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '422':
+          description: バリデーションエラー（必須項目不足、不正な値など）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                issue_date:
+                  type: string
+                  format: date
+                  description: 請求日（YYYY-MM-DD形式）
+                  example: '2025-01-15'
+                payment_amount:
+                  type: string
+                  description: 支払金額（整数または小数、文字列形式）
+                  example: '100000'
+                payment_due_date:
+                  type: string
+                  format: date
+                  description: 支払期限（YYYY-MM-DD形式、issue_date以降）
+                  example: '2025-02-28'
+              required:
+              - issue_date
+              - payment_amount
+              - payment_due_date
+    get:
+      summary: 請求書一覧を取得する
+      tags:
+      - Invoices
+      description: 認証ユーザーの請求書一覧を取得します。支払期限での期間検索が可能です。
+      security:
+      - bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Bearer <JWT>
+        example: Bearer eyJhbGciOiJIUzI1NiJ9...
+        schema:
+          type: string
+      - name: start_date
+        in: query
+        required: false
+        description: 支払期限の開始日（YYYY-MM-DD形式）
+        example: '2025-01-01'
+        schema:
+          type: string
+      - name: end_date
+        in: query
+        required: false
+        description: 支払期限の終了日（YYYY-MM-DD形式）
+        example: '2025-01-31'
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 一覧取得成功（期間検索）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoices:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        user_id:
+                          type: integer
+                          example: 1
+                        issue_date:
+                          type: string
+                          format: date
+                          example: '2025-01-15'
+                        payment_amount:
+                          type: string
+                          example: '100000.00'
+                        fee:
+                          type: string
+                          example: '4000.00'
+                        fee_rate:
+                          type: string
+                          example: '0.0400'
+                        tax_amount:
+                          type: string
+                          example: '400.00'
+                        tax_rate:
+                          type: string
+                          example: '0.1000'
+                        total_amount:
+                          type: string
+                          example: '104400.00'
+                        payment_due_date:
+                          type: string
+                          format: date
+                          example: '2025-02-28'
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: '2025-01-15T10:30:00Z'
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: '2025-01-15T10:30:00Z'
+                      required:
+                      - id
+                      - user_id
+                      - issue_date
+                      - payment_amount
+                      - fee
+                      - fee_rate
+                      - tax_amount
+                      - tax_rate
+                      - total_amount
+                      - payment_due_date
+                      - created_at
+                      - updated_at
+                required:
+                - invoices
+        '401':
+          description: 認証エラー（JWT未提供または無効）
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+        '400':
+          description: 不正な日付形式エラー
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
 servers:
 - url: http://localhost:3000
   description: 開発環境
