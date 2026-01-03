@@ -46,10 +46,14 @@ RSpec/IdenticalEqualityAssertion:
   Enabled: false
 
 # モジュラーモノリス境界を強制するPackwerk cops
+# NOTE: 以下のパターンはクラスメソッドを公開APIとして許可する例外
+# - ActiveRecordモデル: app/packages/*/app/public/*.rb (直下のモデルファイル)
+# - Concern: app/packages/*/app/public/**/*(concern|able).rb (Concernパターン)
 Packs/ClassMethodsAsPublicApis:
   Enabled: true
   Exclude:
-    - 'app/packages/*/app/public/account.rb'  # ActiveRecordモデルは例外
+    - 'app/packages/*/app/public/*.rb'  # ActiveRecordモデル（public直下）
+    - 'app/packages/*/app/public/**/*able.rb'  # Concern命名規則（*ableで終わる）
 
 Packs/DocumentedPublicApis:
   Enabled: false  # ドキュメントの成熟度が上がったら有効化可能
@@ -98,4 +102,10 @@ Sorbet/EnforceSignatures:
   Enabled: false
 
 Sorbet/ForbidSuperclassConstLiteral:
+  Enabled: false
+
+Sorbet/ForbidTBind:
+  Enabled: false
+
+Sorbet/CallbackConditionalsBinding:
   Enabled: false

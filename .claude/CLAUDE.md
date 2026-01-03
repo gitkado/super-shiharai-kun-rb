@@ -150,13 +150,15 @@ Lefthookによる自動チェックが設定済み:
 
 - RuboCop（変更ファイルのみ）
 - Packwerk validate + check（変更ファイルのみ）
-- RSpec（fail-fast）
+- RSpec（fail-fast、DB自動準備）
 
 **pre-push:**
 
 - Brakeman（セキュリティスキャン）
 - Bundler Audit（依存gem脆弱性チェック）
-- RSpec（全テスト）
+- RSpec（全テスト、DB自動準備）
+
+**重要:** RSpec実行前に自動的に`db:test:prepare`が実行され、テストDB が常にクリーンな状態で実行されます。
 
 **フックをスキップ:**
 
@@ -225,6 +227,10 @@ app/
 
 - デフォルトは全て非公開（packages内のapp/配下）
 - 他パッケージから利用されるものだけ `app/public/` に配置
+- 公開API配置のパターン:
+  - ActiveRecordモデル: `app/public/*.rb` (public直下)
+  - サービスクラス: `app/public/<module>/*.rb`
+  - Concern: `app/public/**/*able.rb` (*ableで終わる命名規則推奨)
 
 ### 新しいパッケージの追加
 
@@ -293,9 +299,12 @@ bundle exec packwerk check
 - ベース: `rubocop-rails-omakase`
 - プラグイン: `rubocop-packs`, `rubocop-rspec`
 - Packwerk境界の強制:
-  - `Packs/ClassMethodsAsPublicApis`: 有効
+  - `Packs/ClassMethodsAsPublicApis`: 有効（パターンマッチングで例外管理）
+    - ActiveRecordモデル: `app/packages/*/app/public/*.rb`
+    - Concern: `app/packages/*/app/public/**/*able.rb`
   - `Packs/RootNamespaceIsPackName`: 有効
 - frozen_string_literal: 常に有効（自動修正可能）
+- Sorbetのcops: すべて無効化（Sorbetを利用していないため）
 
 ## コミット分割ポリシー（Claude/committer向け）
 
