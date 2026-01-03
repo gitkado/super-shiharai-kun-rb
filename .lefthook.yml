@@ -14,7 +14,7 @@ pre-commit:
       run: bundle exec packwerk check
     rspec:
       tags: test
-      run: bundle exec rspec --fail-fast
+      run: RAILS_ENV=test bin/rails db:test:prepare && bundle exec rspec --fail-fast
 
 pre-push:
   commands:
@@ -26,4 +26,4 @@ pre-push:
       run: bundle exec bundler-audit check --update
     rspec:
       tags: test
-      run: bundle exec rspec
+      run: RAILS_ENV=test bin/rails db:test:prepare && bundle exec rspec

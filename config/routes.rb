@@ -23,6 +23,8 @@ Rails.application.routes.draw do
           post "login", to: "sessions#create"
         end
       end
+
+      resources :invoices, only: [ :create ]
     end
   end
 end

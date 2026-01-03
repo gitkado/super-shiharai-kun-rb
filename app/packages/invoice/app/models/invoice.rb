@@ -22,7 +22,19 @@ class Invoice < ApplicationRecord
   validate :payment_amount_positive
 
   # コールバック
-  before_validation :calculate_fees_and_taxes, if: :needs_recalculation?
+  # after_initialize: インスタンス生成直後に手数料・税額を計算（常に完全な状態を保証）
+  after_initialize :ensure_calculated_fields
+  # before_validation: save前の最終チェックとして再計算（新規・更新両方）
+  before_validation :recalculate_derived_fields, if: -> { payment_amount.present? }
+
+  # FIXME: 計算が必要なカラムは計算メソッドにまとめて整合性を保つために常に監視しないでも良くする
+  # セッターオーバーライド: 計算元の属性が変更されたら即座に再計算
+  %i[payment_amount fee_rate tax_rate].each do |attr|
+    define_method("#{attr}=") do |value|
+      super(value)  # ActiveRecordの元のセッターを呼ぶ
+      recalculate_derived_fields if persisted? && payment_amount  # 既存レコードのみ即座に再計算
+    end
+  end
 
   # スコープ
   scope :between_payment_due_dates, ->(start_date, end_date) {
@@ -31,17 +43,21 @@ class Invoice < ApplicationRecord
 
   private
 
-  # 再計算が必要かどうかを判定
-  def needs_recalculation?
-    payment_amount_changed? || fee_rate_changed? || tax_rate_changed? || new_record?
-  end
-
-  def calculate_fees_and_taxes
+  # after_initialize: インスタンス生成時の初期計算
+  # - 新規レコード: デフォルトのfee_rate/tax_rateを設定して計算
+  # - 既存レコード: DBから読み込んだ値で計算（整合性確認）
+  def ensure_calculated_fields
     return unless payment_amount
 
+    # デフォルト値を設定（新規作成時のみ）
     self.fee_rate ||= Invoice::Rate.new(AppConfig.invoice_fee_rate)
     self.tax_rate ||= Invoice::Rate.new(AppConfig.invoice_tax_rate)
 
+    recalculate_derived_fields
+  end
+
+  # 派生値を再計算（セッター経由での変更時に即座に呼ばれる）
+  def recalculate_derived_fields
     self.fee = payment_amount * fee_rate.value
     self.tax_amount = fee * tax_rate.value
     self.total_amount = payment_amount + fee + tax_amount
