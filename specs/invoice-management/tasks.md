@@ -798,18 +798,18 @@
 
 ---
 
-### フェーズ5: Controller実装 ✅ 完了（部分実装）
+### フェーズ5: Controller実装 ✅ 完了
 
 - [x] **InvoicesController作成**
   - ファイル: `app/packages/invoice/app/controllers/api/v1/invoices_controller.rb`
-  - **実施結果:** 2025-11-30 完了
+  - **実施結果:** 2026-01-03 完了
   - **実装内容:**
     - POST /api/v1/invoices（請求書登録）実装済み
+    - GET /api/v1/invoices（一覧取得）実装済み
+    - 期間検索機能（start_date/end_date）実装済み
     - JWT認証（`before_action :authenticate_account!`）実装済み
     - Strong Parameters実装済み
     - エラーハンドリング実装済み
-  - **未実装:**
-    - GET /api/v1/invoices（一覧取得）は未実装
 
 - [x] **ApplicationControllerに認証concernを追加**
   - ファイル: `app/controllers/application_controller.rb`
@@ -824,12 +824,12 @@
 
 - [x] **ルーティング追加**
   - ファイル: `config/routes.rb`
-  - **実施結果:** 2025-11-30 完了
+  - **実施結果:** 2026-01-03 完了
   - 追加内容:
     ```ruby
     namespace :api do
       namespace :v1 do
-        resources :invoices, only: [:create]  # POSTのみ
+        resources :invoices, only: [:create, :index]
       end
     end
     ```
@@ -839,23 +839,28 @@
   ```bash
   # ルート確認
   bin/rails routes | grep invoices
+  # ✅ GET  /api/v1/invoices api/v1/invoices#index
   # ✅ POST /api/v1/invoices api/v1/invoices#create
 
   # RuboCop
   bundle exec rubocop app/packages/invoice/
-  # ✅ 8 files inspected, no offenses detected
+  # ✅ 9 files inspected, no offenses detected
 
   # Packwerk
   bundle exec packwerk check app/packages/invoice/
   # ✅ No offenses detected
+
+  # テスト
+  bundle exec rspec app/packages/invoice/spec/
+  # ✅ 107 examples, 0 failures
   ```
 
-- [ ] **コミット:** `feat(pack-invoice): InvoicesController#createを追加`
-- [ ] **コミット:** `chore(routes): 請求書登録APIルーティングを追加`
+- [ ] **コミット:** `feat(pack-invoice): InvoicesControllerを追加（create/index）`
+- [ ] **コミット:** `chore(routes): 請求書APIルーティングを追加（create/index）`
 
 ---
 
-### フェーズ6: リクエストスペック実装 ✅ 完了（部分実装）
+### フェーズ6: リクエストスペック実装 ✅ 完了
 
 - [x] **テストディレクトリ作成**
 
@@ -877,8 +882,27 @@
     - ✅ 異常系: payment_amount負の値エラー
     - ✅ 異常系: payment_due_date が issue_date より前エラー
 
-- [ ] **InvoicesController リクエストスペック（GET /api/v1/invoices）**
-  - ファイル: `app/packages/invoice/spec/requests/api/v1/invoices_index_spec.rb`（未作成）
+- [x] **InvoicesController リクエストスペック（GET /api/v1/invoices）**
+  - ファイル: `app/packages/invoice/spec/requests/api/v1/invoices_index_spec.rb`
+  - **実施結果:** 2026-01-03 完了
+  - **テストケース（9件、全てパス）:**
+    - ✅ 正常系: 全請求書取得
+    - ✅ 正常系: 期間検索（start_date/end_date）
+    - ✅ 正常系: 該当なしで空配列
+    - ✅ 正常系: レスポンス形式検証
+    - ✅ 異常系: JWT未提供エラー
+    - ✅ 異常系: 無効なJWTエラー
+    - ✅ 異常系: 無効な日付形式エラー
+    - ✅ アクセス制御: 他ユーザーの請求書を取得できない（2件）
+
+- [x] **テスト実行結果:**
+
+  ```bash
+  bundle exec rspec app/packages/invoice/spec/requests/api/v1/
+  # ✅ 16 examples, 0 failures (create 7件 + index 9件)
+  ```
+
+- [ ] **コミット:** `test(pack-invoice): InvoicesController リクエストスペックを追加`
   - 内容:
     ```ruby
     require "rails_helper"

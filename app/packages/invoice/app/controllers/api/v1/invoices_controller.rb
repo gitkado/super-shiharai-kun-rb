@@ -8,7 +8,6 @@ module Api
 
       # POST /api/v1/invoices
       def create
-        # TODO: どこで引数以外のInvoice属性を設定しているか
         # NOTE: user_idはcurrent_accountから取得するためパラメータとして受け取らない(セキュリティ対策)
         invoice = Invoice.new(invoice_params.merge(user_id: current_account.id))
 
@@ -23,6 +22,30 @@ module Api
             }
           }, status: :unprocessable_entity
         end
+      end
+
+      # GET /api/v1/invoices
+      def index
+        invoices = Invoice.where(user_id: current_account.id)
+
+        # NOTE: SQL WHERE句で絞り込むため効率的
+        if params[:start_date].present?
+          invoices = invoices.where("payment_due_date >= ?", Date.parse(params[:start_date]))
+        end
+        if params[:end_date].present?
+          invoices = invoices.where("payment_due_date <= ?", Date.parse(params[:end_date]))
+        end
+        invoices = invoices.order(payment_due_date: :desc, created_at: :desc)
+
+        render json: { invoices: invoices.map { |invoice| invoice_json(invoice) } }
+      rescue Date::Error
+        render json: {
+          error: {
+            code: "INVALID_DATE_FORMAT",
+            message: "Invalid date format. Use YYYY-MM-DD.",
+            trace_id: trace_id
+          }
+        }, status: :bad_request
       end
 
       private

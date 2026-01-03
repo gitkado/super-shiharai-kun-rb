@@ -24,7 +24,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :invoices, only: [ :create ]
+      resources :invoices, only: [ :create, :index ]
     end
   end
 end
