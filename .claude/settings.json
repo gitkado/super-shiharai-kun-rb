@@ -1,6 +1,43 @@
 {
+  "model": "claude-opus-4-5",
   "permissions": {
-    "defaultMode": "acceptEdits"
+    "defaultMode": "plan",
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "MultiEdit",
+      "Glob",
+      "Grep",
+      "LSP",
+      "Task",
+      "TodoWrite",
+      "WebFetch",
+      "WebSearch",
+      "NotebookEdit",
+      "Bash(bundle:*)",
+      "Bash(bin/rails:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(sudo:*)"
+    ]
   },
   "hooks": {
     "PostToolUse": [

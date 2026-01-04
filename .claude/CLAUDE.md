@@ -37,15 +37,37 @@ Ruby on Rails 7.2で構築した企業向け支払い管理システムのREST A
 - 新規認証機能を実装する際は、まずBCrypt + JWTの枠内で実装できないか検討すること
 - Rodauth導入を提案する場合は、その必要性を明確に説明し、ユーザーの承認を得ること
 
-## 仕様ドキュメント運用（`specs/` ディレクトリ）
+## AI開発ディレクトリ（`ai/`）
 
-- 機能ごとに `specs/<feature_slug>/` を作成し、以下3ファイルで情報を整理する:
-  - `requirements.md`: 背景、課題、スコープ、非機能要件、ステークホルダー、指標
-  - `design.md`: 設計判断、パッケージ構造、公開API、データ/イベント設計、テスト戦略、リスク
-  - `tasks.md`: 実装TODO、検証コマンド、進捗ログ、残課題
-- `<feature_slug>` はケバブケース（例: `invoice-approval-flow`）。既存機能の場合は追記、未作成ならディレクトリを新規作成する。
-- Claude Codeのarchitectサブエージェントは requirements / design を、implementerサブエージェントは tasks を更新する。差分が出た場合は関連ファイルも合わせて更新する。
-- 詳細ガイド: `specs/README.md`
+Claude Codeの `/dev` と `/verify` コマンドが使用する開発支援ディレクトリ。
+
+### ディレクトリ構造
+
+```
+ai/
+├── board.md              # 作業ボード（現在の実装状況）
+├── specs/                # 機能仕様（永続保存）
+│   └── <feature>/
+│       ├── requirements.md
+│       ├── design.md
+│       └── tasks.md
+└── README.md             # 運用ガイド
+```
+
+### 運用フロー
+
+1. **新規機能開始**: `/dev <feature>` → `ai/specs/<feature>/` に仕様作成、`ai/board.md` に進捗記録
+2. **検証**: `/verify full` → テスト・Lint・レビューを実行、結果を報告
+3. **コミット**: `/dev commit` → コミット分割ポリシーに従ってコミット
+
+### タブ分離（並列作業）
+
+| タブ | コマンド | 役割 | 編集権限 |
+|------|----------|------|----------|
+| Dev | `/dev` | 設計・実装・コミット | あり |
+| Verify | `/verify` | テスト・レビュー | なし（報告のみ） |
+
+詳細ガイド: `ai/README.md`
 
 ## 開発コマンド
 
@@ -172,19 +194,39 @@ LEFTHOOK_EXCLUDE=test git commit -m "message"
 
 ### カスタムスラッシュコマンド
 
-Claude Code専用のカスタムコマンドが `.claude/commands/` に定義されています：
+Claude Code専用のカスタムコマンドとスキルが定義されています。
 
-- **/test**: RSpec全体または指定ファイルを実行するテスト用コマンド
-- **/lint**: RuboCop・Packwerk・Brakeman をまとめて実行する品質チェックコマンド
-- **/commit-plan**: ステージ済み差分を保存してcommitterサブエージェントでコミット計画を自動作成
-- **/commit-apply**: committerが用意したコミットプランを順次適用するコマンド
+#### コマンド（`.claude/commands/`）
 
-**使用例:**
+| コマンド | 役割 | タブ |
+|----------|------|------|
+| `/dev` | 設計・実装・コミットを統合 | Dev |
+| `/verify` | テスト・レビューを統合 | Verify |
+
+#### スキル（`.claude/skills/`）
+
+| スキル | 役割 | 呼び出し元 |
+|--------|------|------------|
+| `/design` | 設計フェーズ（要件定義・設計判断・テストシナリオ） | `/dev <feature>` |
+| `/implement` | TDD実装フェーズ（Red→Green→Refactor） | `/dev continue` |
+| `/commit` | コミット計画・実行 | `/dev commit` |
+| `/test` | RSpec実行 | `/verify test` |
+| `/lint` | 品質チェック（RuboCop・Packwerk・Brakeman） | `/verify lint` |
+| `/review` | コードレビュー | `/verify review` |
+
+#### 使用例
 
 ```bash
-/test spec/requests/hello_spec.rb
-/lint
-/commit-plan
+# Devタブ
+/dev invoice-approval    # 新規機能開始 → /design スキル
+/dev continue            # 作業継続 → /implement スキル
+/dev commit              # コミット作成 → /commit スキル
+
+# Verifyタブ
+/verify full             # テスト + Lint + レビュー
+/verify test             # テストのみ → /test スキル
+/verify lint             # Lintのみ → /lint スキル
+/verify review           # レビューのみ → /review スキル
 ```
 
 ## アーキテクチャ
@@ -306,9 +348,9 @@ bundle exec packwerk check
 - frozen_string_literal: 常に有効（自動修正可能）
 - Sorbetのcops: すべて無効化（Sorbetを利用していないため）
 
-## コミット分割ポリシー（Claude/committer向け）
+## コミット分割ポリシー（/dev commit 向け）
 
-Claudeのcommitterサブエージェントは、以下のルールに従ってコミットを分割・命名すること。
+`/dev commit` 実行時は、以下のルールに従ってコミットを分割・命名すること。
 
 ### 優先的に分離する対象
 
@@ -327,6 +369,14 @@ Claudeのcommitterサブエージェントは、以下のルールに従って�
 - 例:
   - `feat(pack-payment): 承認APIを追加`
   - `test(pack-payment): 承認APIの異常系を追加`
+
+### TDD単位のコミット（推奨）
+
+TDDサイクルごとにコミットを分割することを推奨:
+
+- `test(pack-<domain>)`: テストケース追加（Red Phase完了時）
+- `feat(pack-<domain>)`: 機能実装（Green Phase完了時）
+- `refactor(pack-<domain>)`: リファクタリング（Refactor Phase完了時、変更がある場合のみ）
 
 ### 横断的な変更
 
@@ -396,7 +446,8 @@ RAILS_ENV=test bin/rails console
 
 詳細は以下を参照:
 
-- `specs/vscode-lsp-setup/` - VS Code + Ruby LSP導入ガイド（開発環境セットアップ）
+- `ai/README.md` - AI開発ディレクトリ運用ガイド
+- `ai/specs/vscode-lsp-setup/` - VS Code + Ruby LSP導入ガイド（開発環境セットアップ）
 - `doc/modular_monolith.md` - モジュラーモノリスアーキテクチャの詳細
 - `doc/packwerk_guide.md` - Packwerk使用方法
 - `doc/error_handling.md` - エラーハンドリングの詳細
