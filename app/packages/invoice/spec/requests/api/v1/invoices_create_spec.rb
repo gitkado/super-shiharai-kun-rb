@@ -8,7 +8,7 @@ RSpec.describe "POST /api/v1/invoices", type: :request do
   let(:headers) { { "Authorization" => "Bearer #{jwt}" } }
 
   describe "正常系" do
-    it "creates invoice and returns calculated fees" do
+    it "請求書を作成し、手数料を自動計算して返す" do
       post "/api/v1/invoices", params: {
         issue_date: "2025-01-15",
         payment_amount: "100000",
@@ -29,7 +29,7 @@ RSpec.describe "POST /api/v1/invoices", type: :request do
       expect(json["payment_due_date"]).to eq("2025-02-28")
     end
 
-    it "calculates fees with custom rates" do
+    it "カスタム料率で手数料を計算する" do
       original_fee_rate = ENV["INVOICE_FEE_RATE"]
       original_tax_rate = ENV["INVOICE_TAX_RATE"]
 
@@ -55,7 +55,7 @@ RSpec.describe "POST /api/v1/invoices", type: :request do
   end
 
   describe "異常系" do
-    it "returns 401 without JWT" do
+    it "JWT未提供時に401エラーを返す" do
       post "/api/v1/invoices", params: {
         issue_date: "2025-01-15",
         payment_amount: "100000",
@@ -67,7 +67,7 @@ RSpec.describe "POST /api/v1/invoices", type: :request do
       expect(json["error"]["code"]).to eq("UNAUTHORIZED")
     end
 
-    it "returns 401 with invalid JWT" do
+    it "無効なJWT時に401エラーを返す" do
       post "/api/v1/invoices", params: {
         issue_date: "2025-01-15",
         payment_amount: "100000",
@@ -77,7 +77,7 @@ RSpec.describe "POST /api/v1/invoices", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    it "returns error for missing payment_amount" do
+    it "payment_amount未入力時にエラーを返す" do
       post "/api/v1/invoices", params: {
         issue_date: "2025-01-15",
         payment_due_date: "2025-02-28"
@@ -88,7 +88,7 @@ RSpec.describe "POST /api/v1/invoices", type: :request do
       expect(json["error"]["code"]).to eq("INVOICE_CREATION_FAILED")
     end
 
-    it "returns error for negative payment_amount" do
+    it "payment_amountが負の値の場合にエラーを返す" do
       post "/api/v1/invoices", params: {
         issue_date: "2025-01-15",
         payment_amount: "-100",
@@ -100,7 +100,7 @@ RSpec.describe "POST /api/v1/invoices", type: :request do
       expect(json["error"]["message"]).to include("must be greater than 0")
     end
 
-    it "returns error when payment_due_date is before issue_date" do
+    it "payment_due_dateがissue_dateより前の場合にエラーを返す" do
       post "/api/v1/invoices", params: {
         issue_date: "2025-02-28",
         payment_amount: "100000",

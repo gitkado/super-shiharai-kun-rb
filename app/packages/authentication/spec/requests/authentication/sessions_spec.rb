@@ -19,7 +19,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
   describe "正常系: ログイン成功とJWT発行" do
     let!(:account) { create_test_account(email: "user@example.com", password: "correct_password") }
 
-    it "returns JWT for valid credentials" do
+    it "正しい認証情報でJWTを返す" do
       post "/api/v1/auth/login", params: {
         email: "user@example.com",
         password: "correct_password"
@@ -38,7 +38,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
       expect(json["account"]["email"]).to eq("user@example.com")
     end
 
-    it "allows login with uppercase email" do
+    it "大文字のメールアドレスでログインできる" do
       post "/api/v1/auth/login", params: {
         email: "USER@EXAMPLE.COM",
         password: "correct_password"
@@ -51,7 +51,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
       expect(json["account"]["email"]).to eq("user@example.com")
     end
 
-    it "allows login with email containing whitespace" do
+    it "前後に空白があるメールアドレスでログインできる" do
       post "/api/v1/auth/login", params: {
         email: "  user@example.com  ",
         password: "correct_password"
@@ -67,7 +67,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
   describe "異常系: 認証失敗" do
     let!(:account) { create_test_account(email: "user@example.com", password: "correct_password") }
 
-    it "returns error for invalid password" do
+    it "無効なパスワードの場合にエラーを返す" do
       post "/api/v1/auth/login", params: {
         email: "user@example.com",
         password: "wrong_password"
@@ -82,7 +82,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
       expect(json["error"]["trace_id"]).to be_present
     end
 
-    it "returns error for non-existent email" do
+    it "存在しないメールアドレスの場合にエラーを返す" do
       post "/api/v1/auth/login", params: {
         email: "nonexistent@example.com",
         password: "password123"
@@ -95,7 +95,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
       expect(json["error"]["message"]).to eq("Invalid email or password")
     end
 
-    it "does not reveal account existence (same error for both cases)" do
+    it "アカウント存在を明かさない（両ケースで同じエラー）" do
       # 実在するアカウントへの誤パスワード
       post "/api/v1/auth/login", params: {
         email: "user@example.com",
@@ -119,7 +119,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
   describe "異常系: パラメータ不足" do
     let!(:account) { create_test_account(email: "user@example.com", password: "correct_password") }
 
-    it "returns error for missing email" do
+    it "メールアドレスが未指定の場合にエラーを返す" do
       post "/api/v1/auth/login", params: {
         password: "correct_password"
       }
@@ -130,7 +130,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
       expect(json["error"]["code"]).to eq("LOGIN_FAILED")
     end
 
-    it "returns error for missing password" do
+    it "パスワードが未指定の場合にエラーを返す" do
       post "/api/v1/auth/login", params: {
         email: "user@example.com"
       }
@@ -141,7 +141,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
       expect(json["error"]["code"]).to eq("LOGIN_FAILED")
     end
 
-    it "returns error for empty email" do
+    it "メールアドレスが空の場合にエラーを返す" do
       post "/api/v1/auth/login", params: {
         email: "",
         password: "correct_password"
@@ -150,7 +150,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    it "returns error for empty password" do
+    it "パスワードが空の場合にエラーを返す" do
       post "/api/v1/auth/login", params: {
         email: "user@example.com",
         password: ""
@@ -161,7 +161,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
   end
 
   describe "異常系: アカウントステータス" do
-    it "allows login for locked accounts (status checks skipped)" do
+    it "ロックされたアカウントでもログインできる（ステータスチェックスキップ）" do
       account = create_test_account(email: "locked@example.com", password: "password123")
       account.update!(status: "locked")
 
@@ -174,7 +174,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
-    it "allows login for unverified accounts (status checks skipped)" do
+    it "未検証アカウントでもログインできる（ステータスチェックスキップ）" do
       account = create_test_account(email: "unverified@example.com", password: "password123")
       account.update!(status: "unverified")
 
@@ -191,7 +191,7 @@ RSpec.describe "POST /api/v1/auth/login", type: :request do
   describe "レスポンス形式の検証" do
     let!(:account) { create_test_account(email: "user@example.com", password: "correct_password") }
 
-    it "returns expected JSON structure on success" do
+    it "成功時に期待されるJSON構造を返す" do
       post "/api/v1/auth/login", params: {
         email: "user@example.com",
         password: "correct_password"

@@ -5,7 +5,7 @@ require "rails_helper"
 # rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
 RSpec.describe "POST /api/v1/auth/register", type: :request do
   describe "正常系: ユーザー登録とJWT発行" do
-    it "creates account and returns JWT with account info" do
+    it "アカウントを作成し、JWTとアカウント情報を返す" do
       post "/api/v1/auth/register", params: {
         email: "newuser@example.com",
         password: "secure_password123"
@@ -35,7 +35,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
       expect(password_hash.password_hash).to be_present
     end
 
-    it "normalizes email to lowercase" do
+    it "メールアドレスを小文字に正規化する" do
       post "/api/v1/auth/register", params: {
         email: "NEWUSER@EXAMPLE.COM",
         password: "secure_password123"
@@ -48,7 +48,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
       expect(Account.find_by(email: "newuser@example.com")).to be_present
     end
 
-    it "strips whitespace from email" do
+    it "メールアドレスの前後空白を除去する" do
       post "/api/v1/auth/register", params: {
         email: "  newuser@example.com  ",
         password: "secure_password123"
@@ -62,7 +62,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
   end
 
   describe "異常系: メールアドレス重複" do
-    it "returns error for duplicate email" do
+    it "重複するメールアドレスの場合にエラーを返す" do
       # 既存アカウント作成
       Account.create!(email: "existing@example.com", status: "verified")
 
@@ -80,7 +80,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
       expect(json["error"]["trace_id"]).to be_present
     end
 
-    it "returns error for duplicate email (case-insensitive)" do
+    it "大文字小文字を区別せず重複チェックする" do
       Account.create!(email: "existing@example.com", status: "verified")
 
       post "/api/v1/auth/register", params: {
@@ -96,7 +96,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
   end
 
   describe "異常系: 無効なメールアドレス" do
-    it "returns error for invalid email format" do
+    it "不正なメールアドレス形式の場合にエラーを返す" do
       post "/api/v1/auth/register", params: {
         email: "invalid-email",
         password: "password123"
@@ -110,7 +110,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
       expect(json["error"]["trace_id"]).to be_present
     end
 
-    it "returns error for email without @" do
+    it "@がないメールアドレスの場合にエラーを返す" do
       post "/api/v1/auth/register", params: {
         email: "nodomain",
         password: "password123"
@@ -119,7 +119,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
-    it "returns error for email without domain" do
+    it "ドメインがないメールアドレスの場合にエラーを返す" do
       post "/api/v1/auth/register", params: {
         email: "user@",
         password: "password123"
@@ -128,7 +128,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
-    it "returns error for missing email" do
+    it "メールアドレスが空の場合にエラーを返す" do
       post "/api/v1/auth/register", params: {
         email: "",
         password: "password123"
@@ -142,7 +142,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
   end
 
   describe "異常系: パスワード不足" do
-    it "returns error for missing password" do
+    it "パスワードが空の場合にエラーを返す" do
       post "/api/v1/auth/register", params: {
         email: "user@example.com",
         password: ""
@@ -155,7 +155,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
       expect(json["error"]["message"]).to be_present
     end
 
-    it "returns error for nil password" do
+    it "パスワードが未指定の場合にエラーを返す" do
       post "/api/v1/auth/register", params: {
         email: "user@example.com"
       }
@@ -168,7 +168,7 @@ RSpec.describe "POST /api/v1/auth/register", type: :request do
   end
 
   describe "レスポンス形式の検証" do
-    it "returns expected JSON structure" do
+    it "期待されるJSON構造を返す" do
       post "/api/v1/auth/register", params: {
         email: "newuser@example.com",
         password: "secure_password123"

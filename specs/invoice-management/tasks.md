@@ -91,7 +91,7 @@
   - Packwerk検証: Validation successful 🎉
   - 環境変数: OK
 
-- [ ] **コミット:** `chore(config): 請求書管理用環境変数を追加`
+- [x] **コミット:** `chore(config): 請求書管理用環境変数を追加`
 
 ---
 
@@ -281,7 +281,7 @@
 
   **実施結果:** 2025-11-17 20:10 完了 - 全テストパス（76 examples, 0 failures）
 
-- [ ] **コミット:** `feat(pack-invoice): Invoice::Money値オブジェクトを追加`
+- [x] **コミット:** `feat(pack-invoice): Invoice::Money値オブジェクトを追加`
 
 #### 2-2. Rate 値オブジェクト
 
@@ -436,7 +436,7 @@
 
   **実施結果:** 2025-11-17 20:10 完了 - 全テストパス（76 examples, 0 failures）
 
-- [ ] **コミット:** `feat(pack-invoice): Invoice::Rate値オブジェクトを追加`
+- [x] **コミット:** `feat(pack-invoice): Invoice::Rate値オブジェクトを追加`
 
 ---
 
@@ -519,8 +519,8 @@
   - テーブル作成: true
   - スキーマ確認: OK（外部キー制約、インデックス、CHECK制約すべて正常）
 
-- [ ] **コミット:** `chore(migration): invoicesテーブルを追加`
-- [ ] **コミット:** `chore(schema): schema.rbを更新`
+- [x] **コミット:** `chore(migration): invoicesテーブルを追加`
+- [x] **コミット:** `chore(schema): schema.rbを更新`
 
 ---
 
@@ -793,8 +793,8 @@
 
   **実施結果:** 2025-11-17 20:34 完了 - 全テストパス（91 examples, 0 failures）
 
-- [ ] **コミット:** `feat(pack-invoice): Invoiceモデルを追加`
-- [ ] **コミット:** `test(pack-invoice): Invoiceモデルのユニットテストを追加`
+- [x] **コミット:** `feat(pack-invoice): Invoiceモデルを追加`
+- [x] **コミット:** `test(pack-invoice): Invoiceモデルのユニットテストを追加`
 
 ---
 
@@ -855,8 +855,8 @@
   # ✅ 107 examples, 0 failures
   ```
 
-- [ ] **コミット:** `feat(pack-invoice): InvoicesControllerを追加（create/index）`
-- [ ] **コミット:** `chore(routes): 請求書APIルーティングを追加（create/index）`
+- [x] **コミット:** `feat(pack-invoice): InvoicesControllerを追加（create/index）`
+- [x] **コミット:** `chore(routes): 請求書APIルーティングを追加（create/index）`
 
 ---
 
@@ -910,7 +910,7 @@
   # ✅ 24 examples, 0 failures (create 7件 + index 17件)
   ```
 
-- [ ] **コミット:** `test(pack-invoice): InvoicesController リクエストスペックを追加`
+- [x] **コミット:** `test(pack-invoice): InvoicesController リクエストスペックを追加`
   - 内容:
     ```ruby
     require "rails_helper"
@@ -1121,13 +1121,13 @@
     end
     ```
 
-- [ ] **テスト実行**
+- [x] **テスト実行**
 
   ```bash
   bundle exec rspec app/packages/invoice/spec/requests/api/v1/invoices_spec.rb
   ```
 
-- [ ] **コミット:** `test(pack-invoice): InvoicesController リクエストスペックを追加`
+- [x] **コミット:** `test(pack-invoice): InvoicesController リクエストスペックを追加`
 
 ---
 
@@ -1332,13 +1332,13 @@
     # rubocop:enable RSpec/LetSetup
     ```
 
-- [ ] **Swagger YAML生成**
+- [x] **Swagger YAML生成**
 
   ```bash
   RAILS_ENV=test bundle exec rake rswag:specs:swaggerize
   ```
 
-- [ ] **検証コマンド:**
+- [x] **検証コマンド:**
 
   ```bash
   # Swagger UIで確認
@@ -1346,13 +1346,13 @@
   # ブラウザで http://localhost:3000/api-docs を開く
   ```
 
-- [ ] **コミット:** `chore(swagger): 請求書API仕様を生成`
+- [x] **コミット:** `chore(swagger): 請求書API仕様を生成`
 
 ---
 
 ### フェーズ8: 統合テスト・品質チェック
 
-- [ ] **全テスト実行**
+- [x] **全テスト実行**
   ```bash
   bundle exec rspec
   ```
@@ -1366,7 +1366,7 @@
 
   **実施結果:** 2026-01-03 完了
 
-- [ ] **コミット:** `feat(pack-invoice): RSwag統合スペックを追加`
+- [x] **コミット:** `feat(pack-invoice): RSwag統合スペックを追加`
 
 ---
 
@@ -1448,19 +1448,19 @@
     -H "Authorization: Bearer $JWT"
   ```
 
-- [ ] **検証項目チェックリスト:**
+- [x] **検証項目チェックリスト:**
 
-  - [ ] 全テストがパス（緑色）
-  - [ ] RuboCop違反なし
-  - [ ] Packwerk依存関係違反なし
-  - [ ] Brakemanで重大な脆弱性なし
-  - [ ] curlで請求書登録成功
-  - [ ] curlで一覧取得成功
-  - [ ] 手数料が正しく計算される（100000 → fee 4000, tax 400, total 104400）
-  - [ ] JWT未提供時に401エラー
-  - [ ] 他ユーザーの請求書が取得できない
+  - [x] 全テストがパス（緑色）
+  - [x] RuboCop違反なし
+  - [x] Packwerk依存関係違反なし
+  - [x] Brakemanで重大な脆弱性なし
+  - [x] curlで請求書登録成功
+  - [x] curlで一覧取得成功
+  - [x] 手数料が正しく計算される（100000 → fee 4000, tax 400, total 104400）
+  - [x] JWT未提供時に401エラー
+  - [x] 他ユーザーの請求書が取得できない
 
-- [ ] **コミット（必要に応じて）:** `chore(rubocop): コードスタイルを修正`
+- [x] **コミット（必要に応じて）:** `chore(rubocop): コードスタイルを修正`
 
 ---
 
@@ -1470,31 +1470,31 @@
 
 - [x] Money値オブジェクト: 初期化、演算、比較、ActiveRecord統合
 - [x] Rate値オブジェクト: 初期化、比較、to_percent、ActiveRecord統合
-- [ ] Invoiceモデル: バリデーション（必須項目、日付順序、正の値）
-- [ ] Invoiceモデル: 手数料計算（デフォルト料率、カスタム料率、丸め処理）
-- [ ] Invoiceモデル: スコープ（between_payment_due_dates）
+- [x] Invoiceモデル: バリデーション（必須項目、日付順序、正の値）
+- [x] Invoiceモデル: 手数料計算（デフォルト料率、カスタム料率、丸め処理）
+- [x] Invoiceモデル: スコープ（between_payment_due_dates）
 
 ### リクエストテスト（API）
 
-- [ ] 登録: 正常系（手数料自動計算）
-- [ ] 登録: カスタム料率での計算
-- [ ] 登録: JWT未提供エラー
-- [ ] 登録: 無効なJWTエラー
-- [ ] 登録: payment_amount未入力エラー
-- [ ] 登録: payment_amount負の値エラー
-- [ ] 登録: payment_due_date が issue_date より前エラー
-- [ ] 一覧: 全件取得
-- [ ] 一覧: 期間検索
-- [ ] 一覧: 空配列（該当なし）
-- [ ] 一覧: JWT未提供エラー
-- [ ] 一覧: アクセス制御（他ユーザーの請求書が含まれない）
+- [x] 登録: 正常系（手数料自動計算）
+- [x] 登録: カスタム料率での計算
+- [x] 登録: JWT未提供エラー
+- [x] 登録: 無効なJWTエラー
+- [x] 登録: payment_amount未入力エラー
+- [x] 登録: payment_amount負の値エラー
+- [x] 登録: payment_due_date が issue_date より前エラー
+- [x] 一覧: 全件取得
+- [x] 一覧: 期間検索
+- [x] 一覧: 空配列（該当なし）
+- [x] 一覧: JWT未提供エラー
+- [x] 一覧: アクセス制御（他ユーザーの請求書が含まれない）
 
 ### セキュリティテスト
 
-- [ ] JWT認証が全APIで機能
-- [ ] user_id をパラメータで偽装できない
-- [ ] 他ユーザーの請求書にアクセスできない
-- [ ] SQLインジェクション対策
+- [x] JWT認証が全APIで機能
+- [x] user_id をパラメータで偽装できない
+- [x] 他ユーザーの請求書にアクセスできない
+- [x] SQLインジェクション対策
 
 ---
 
@@ -1526,8 +1526,8 @@
 7. 複合検索（金額範囲、発行日範囲等）
 
 ### ドキュメント更新
-- [ ] `README.md` に請求書管理機能の説明を追加
-- [ ] `CLAUDE.md` に環境変数セクション追加（`INVOICE_FEE_RATE`, `INVOICE_TAX_RATE`）
+- [x] `README.md` に請求書管理機能の説明を追加
+- [x] `CLAUDE.md` に環境変数セクション追加（`INVOICE_FEE_RATE`, `INVOICE_TAX_RATE`）
 
 ### 他パッケージへの影響
 - `authentication` パッケージ: `Authenticatable` concernを `ApplicationController` に追加（フェーズ5で実施）
