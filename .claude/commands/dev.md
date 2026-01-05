@@ -29,6 +29,13 @@ argument-hint: "<feature> | continue | commit"
 2. コミット計画を提案
 3. 確認後、コミット実行
 
+### `/dev pr` - PR作成
+
+`/pr` スキルを実行:
+1. コミット済みの変更を確認
+2. PRタイトル・本文を提案
+3. 確認後、push + PR作成
+
 ## 権限
 
 - ファイル編集: あり
@@ -42,3 +49,4 @@ argument-hint: "<feature> | continue | commit"
 | `/design` | 設計フェーズ（要件定義・設計判断・タスク分解） |
 | `/implement` | 実装フェーズ（コード実装・テスト追加） |
 | `/commit` | コミット計画・実行 |
+| `/pr` | PR作成（push確認 + gh pr create） |
