@@ -49,6 +49,19 @@ ai/
 - CLAUDE.md のコミット分割ポリシーに従ってコミット
 - `ai/board.md` の History に記録
 
+### 4. PR作成（タスク完了）
+
+```bash
+# Devタブで実行
+/dev pr
+```
+
+- コミット済みの変更をリモートにpush
+- GitHub PRを作成
+- PR URLを報告
+
+**注意**: git push実行前にユーザー確認を求める。
+
 ## ファイル詳細
 
 ### board.md
@@ -88,6 +101,7 @@ ai/
 | `/design` | 設計フェーズ（テストシナリオ含む） | `/dev <feature>` |
 | `/implement` | TDD実装（Red→Green→Refactor） | `/dev continue` |
 | `/commit` | コミット計画・実行 | `/dev commit` |
+| `/pr` | PR作成（push確認 + gh pr create） | `/dev pr` |
 | `/test` | RSpec実行 | `/verify test` |
 | `/lint` | 品質チェック | `/verify lint` |
 | `/review` | コードレビュー | `/verify review` |

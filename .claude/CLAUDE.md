@@ -59,6 +59,7 @@ ai/
 1. **新規機能開始**: `/dev <feature>` → `ai/specs/<feature>/` に仕様作成、`ai/board.md` に進捗記録
 2. **検証**: `/verify full` → テスト・Lint・レビューを実行、結果を報告
 3. **コミット**: `/dev commit` → コミット分割ポリシーに従ってコミット
+4. **PR作成**: `/dev pr` → push + PR作成（タスク完了）
 
 ### タブ分離（並列作業）
 
@@ -210,6 +211,7 @@ Claude Code専用のカスタムコマンドとスキルが定義されていま
 | `/design` | 設計フェーズ（要件定義・設計判断・テストシナリオ） | `/dev <feature>` |
 | `/implement` | TDD実装フェーズ（Red→Green→Refactor） | `/dev continue` |
 | `/commit` | コミット計画・実行 | `/dev commit` |
+| `/pr` | PR作成（push確認 + gh pr create） | `/dev pr` |
 | `/test` | RSpec実行 | `/verify test` |
 | `/lint` | 品質チェック（RuboCop・Packwerk・Brakeman） | `/verify lint` |
 | `/review` | コードレビュー | `/verify review` |
@@ -221,6 +223,7 @@ Claude Code専用のカスタムコマンドとスキルが定義されていま
 /dev invoice-approval    # 新規機能開始 → /design スキル
 /dev continue            # 作業継続 → /implement スキル
 /dev commit              # コミット作成 → /commit スキル
+/dev pr                  # PR作成 → /pr スキル
 
 # Verifyタブ
 /verify full             # テスト + Lint + レビュー
