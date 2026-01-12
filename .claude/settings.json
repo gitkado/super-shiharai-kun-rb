@@ -1,7 +1,8 @@
 {
-  "model": "claude-opus-4-5",
+  "env": {
+    "MAX_THINKING_TOKENS": "31999"
+  },
   "permissions": {
-    "defaultMode": "plan",
     "allow": [
       "Read",
       "Edit",
@@ -15,7 +16,12 @@
       "WebFetch",
       "WebSearch",
       "NotebookEdit",
-      "Bash(bundle:*)",
+      "Bash(bundle exec rspec:*)",
+      "Bash(bundle exec rubocop:*)",
+      "Bash(bundle exec packwerk:*)",
+      "Bash(bundle exec brakeman:*)",
+      "Bash(bundle exec rake:*)",
+      "Bash(bundle install:*)",
       "Bash(bin/rails:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
@@ -25,6 +31,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rebase:*)",
       "Bash(gh:*)",
       "Bash(ls:*)",
       "Bash(cat:*)",
@@ -40,24 +48,14 @@
       "Bash(git reset --hard:*)",
       "Bash(git clean:*)",
       "Bash(sudo:*)"
-    ]
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bundle exec rspec --fail-fast || echo 'テスト失敗。Claudeに修正を依頼してください。'"
-          },
-          {
-            "type": "command",
-            "command": "bundle exec rubocop && bundle exec packwerk check && bundle exec brakeman -q"
-          }
-        ]
-      }
     ],
+    "defaultMode": "plan"
+  },
+  "model": "claude-opus-4-5",
+  "disabledMcpjsonServers": [
+    "serena"
+  ],
+  "hooks": {
     "PreToolUse": [
       {
         "matcher": "Bash|run_bash",
@@ -70,8 +68,7 @@
       }
     ]
   },
-  "env": {
-    "MAX_THINKKING_TOKENS": "31999"
-  },
-  "disabledMcpjsonServers": ["serena"]
+  "enabledPlugins": {
+    "code-simplifier@claude-plugins-official": true
+  }
 }

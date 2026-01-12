@@ -16,22 +16,28 @@ argument-hint: "test [path] | lint | review | full"
 
 ### `/verify test [path]` - テスト実行
 
-`/test` スキルを実行し、結果を報告。
+`bundle exec rspec` を実行し、結果を報告。
 
 ### `/verify lint` - 品質チェック
 
-`/lint` スキルを実行し、結果を報告。
+`bundle exec rubocop && bundle exec packwerk check && bundle exec brakeman -q` を実行し、結果を報告。
 
 ### `/verify review` - コードレビュー
 
-`/review` スキルを実行:
 1. `ai/specs/<feature>/` の設計ドキュメントを参照
 2. 実装との整合性をチェック
 3. 指摘事項を優先度付きで報告
 
-### `/verify full` - フル検証
+### `/verify full` - フル検証（エージェント実行）
 
-test + lint + review を順実行。
+`verifier` エージェントに委譲し、test + lint + review を自動パイプライン実行する。
+
+Task tool を使用:
+
+- `subagent_type`: `verifier`
+- `prompt`: `テスト・Lint・レビューを実行し、レポートを生成してください`
+
+エージェントが検証パイプラインを実行し、structured report を生成する。
 
 ## 報告形式
 
@@ -42,10 +48,12 @@ test + lint + review を順実行。
 
 ### Test Results
 - Status: PASS / FAIL
+- Summary: XX examples, X failures
 
 ### Lint Results
 - RuboCop: PASS / FAIL
 - Packwerk: PASS / FAIL
+- Brakeman: PASS / FAIL
 
 ### Review Findings
 | Severity | File | Line | Finding |
