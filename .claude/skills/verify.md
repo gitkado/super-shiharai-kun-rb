@@ -1,6 +1,6 @@
 ---
 name: verify
-description: テスト・レビューを担当するVerifyコマンド（Verifyタブ用）
+description: テスト・レビューを担当するVerifyスキル
 argument-hint: "test [path] | lint | review | full"
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: pr
 description: PR作成（push確認 + gh pr create）
+disable-model-invocation: true
 ---
 
 あなたはPR作成担当です。コミット済みの変更をGitHubにpushし、PRを作成します。

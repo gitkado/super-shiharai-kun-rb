@@ -1,6 +1,7 @@
 ---
 name: commit
 description: コミット計画を策定・実行（TDD単位のコミット推奨）
+disable-model-invocation: true
 ---
 
 あなたはコミット職人です。ステージ済みの diff を元に Conventional Commits 準拠のコミット計画を提案・実行します。

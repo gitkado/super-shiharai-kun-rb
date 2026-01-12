@@ -70,6 +70,82 @@ ai/
 
 詳細ガイド: `ai/README.md`
 
+## 開発フロー（機能実装の標準手順）
+
+新機能を開発する際は、以下のフェーズに従って進める。
+
+### Phase 1: 設計（Design）
+
+```
+/dev <feature-name>
+```
+
+1. `ai/specs/<feature>/` に設計ドキュメントを作成
+   - `requirements.md` - 要件定義
+   - `design.md` - 設計判断・技術選定
+   - `tasks.md` - テストシナリオ・タスク分解
+2. `ai/board.md` に進捗を記録
+3. 設計レビュー（必要に応じて `/verify review`）
+
+### Phase 2: 実装（Implement）
+
+```
+/dev
+```
+
+TDD実装は `tdd-executor` エージェントに委譲。Claude 本体は進捗管理に専念。
+
+エージェントが TDD サイクル（Red→Green→Refactor）を自動実行:
+
+1. **Red**: 失敗するテストを書く
+2. **Green**: 最小限の実装でテストを通す
+3. **Refactor**: コード品質を改善
+
+### Phase 3: 検証（Verify）
+
+```
+/verify full
+```
+
+品質チェックを実行:
+
+- `bundle exec rspec` - テスト
+- `bundle exec rubocop` - コードスタイル
+- `bundle exec packwerk check` - パッケージ境界
+- `bundle exec brakeman -q` - セキュリティ
+
+### Phase 4: コミット（Commit）
+
+```
+/dev commit
+```
+
+コミット分割ポリシーに従って変更をコミット。
+
+### Phase 5: PR作成（Pull Request）
+
+```
+/dev pr
+```
+
+1. 変更をリモートにpush
+2. PRを作成（`gh pr create`）
+3. `ai/board.md` にPR情報を記録
+
+### フロー図
+
+```
+/dev <feature>  →  /dev  →  /verify full  →  /dev commit  →  /dev pr
+    (設計)        (実装)      (検証)         (コミット)       (PR)
+```
+
+### 並列作業（Dev/Verifyタブ分離）
+
+| タブ | スキル | 役割 | 編集権限 |
+|------|--------|------|----------|
+| Dev | `/dev` | 設計・実装・コミット・PR | あり |
+| Verify | `/verify` | テスト・Lint・レビュー | なし（読み取り専用） |
+
 ## 開発コマンド
 
 ### 環境セットアップ
@@ -195,41 +271,52 @@ LEFTHOOK_EXCLUDE=test git commit -m "message"
 
 ### カスタムスラッシュコマンド
 
-Claude Code専用のカスタムコマンドとスキルが定義されています。
+Claude Code専用のスキルとエージェントが定義されています。
 
-#### コマンド（`.claude/commands/`）
+#### メインスキル
 
-| コマンド | 役割 | タブ |
-|----------|------|------|
-| `/dev` | 設計・実装・コミットを統合 | Dev |
-| `/verify` | テスト・レビューを統合 | Verify |
+| スキル | 役割 | 使用例 |
+|--------|------|--------|
+| `/dev` | 設計・TDD実装・コミット・PR | `/dev invoice-approval`, `/dev`, `/dev commit`, `/dev pr` |
+| `/verify` | テスト・Lint・レビュー | `/verify full`, `/verify test`, `/verify lint`, `/verify review` |
 
-#### スキル（`.claude/skills/`）
+#### サブスキル（/dev から呼ばれる）
 
-| スキル | 役割 | 呼び出し元 |
-|--------|------|------------|
-| `/design` | 設計フェーズ（要件定義・設計判断・テストシナリオ） | `/dev <feature>` |
-| `/implement` | TDD実装フェーズ（Red→Green→Refactor） | `/dev continue` |
-| `/commit` | コミット計画・実行 | `/dev commit` |
-| `/pr` | PR作成（push確認 + gh pr create） | `/dev pr` |
-| `/test` | RSpec実行 | `/verify test` |
-| `/lint` | 品質チェック（RuboCop・Packwerk・Brakeman） | `/verify lint` |
-| `/review` | コードレビュー | `/verify review` |
+| スキル | 役割 | 自動呼び出し |
+|--------|------|--------------|
+| `/design` | 設計フェーズ（要件定義・設計判断・タスク分解） | `/dev <feature>` |
+| `/commit` | コミット計画・実行 | 手動のみ（`/dev commit`） |
+| `/pr` | PR作成（push確認 + gh pr create） | 手動のみ（`/dev pr`） |
+
+#### サブスキル（/verify から呼ばれる）
+
+| スキル | 役割 |
+|--------|------|
+| `/test` | RSpec実行 |
+| `/lint` | 品質チェック（RuboCop・Packwerk・Brakeman） |
+| `/review` | コードレビュー |
+
+#### カスタムエージェント
+
+| エージェント | 役割 | 呼び出し元 |
+|--------------|------|------------|
+| `tdd-executor` | TDDサイクル自動実行 | `/dev`（常に委譲） |
+| `verifier` | 検証パイプライン自動実行 | `/verify full` |
 
 #### 使用例
 
 ```bash
-# Devタブ
-/dev invoice-approval    # 新規機能開始 → /design スキル
-/dev continue            # 作業継続 → /implement スキル
-/dev commit              # コミット作成 → /commit スキル
-/dev pr                  # PR作成 → /pr スキル
+# 新機能開発の流れ
+/dev invoice-approval    # Phase 1: 設計
+/dev                     # Phase 2: TDD実装
+/verify full             # Phase 3: 検証
+/dev commit              # Phase 4: コミット
+/dev pr                  # Phase 5: PR作成
 
-# Verifyタブ
-/verify full             # テスト + Lint + レビュー
-/verify test             # テストのみ → /test スキル
-/verify lint             # Lintのみ → /lint スキル
-/verify review           # レビューのみ → /review スキル
+# 個別操作
+/verify test             # テストのみ
+/verify lint             # Lintのみ
+/verify review           # レビューのみ
 ```
 
 ## アーキテクチャ
