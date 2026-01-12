@@ -444,53 +444,45 @@ bundle exec packwerk check
 
 ### 優先的に分離する対象
 
-- `db/migrate/*.rb` → `chore(migration)` または `feat(db)`（単独コミット）
-- `db/schema.rb` → `chore(schema)`（単独コミット）
-- `Gemfile.lock` → `chore(lockfile)`（単独コミット）
-- `swagger/**/*.yaml` → `chore(swagger)`（単独コミット）
-- `config/routes.rb` → `chore(routes)`（単独コミット）
+以下のファイルは単独コミットとして分離:
+
+- `db/migrate/*.rb` → `chore: マイグレーションを追加`
+- `db/schema.rb` → `chore: スキーマを更新`
+- `Gemfile.lock` → `chore: 依存関係を更新`
+- `swagger/**/*.yaml` → `chore: API仕様書を更新`
+- `config/routes.rb` → `chore: ルーティングを更新`
 
 ### ドメイン/パッケージ単位
 
-- `app/packages/<domain>/` ごとにコミットを分ける。
-- コミット種別:
-  - 実装: `feat(pack-<domain>)` / `fix(pack-<domain>)` / `refactor(pack-<domain>)`
-  - テスト: `test(pack-<domain>)`
+- `app/packages/<domain>/` ごとにコミットを分ける
 - 例:
-  - `feat(pack-payment): 承認APIを追加`
-  - `test(pack-payment): 承認APIの異常系を追加`
+  - `feat: 承認APIを追加`
+  - `test: 承認APIの異常系テストを追加`
 
 ### TDD単位のコミット（推奨）
 
-TDDサイクルごとにコミットを分割することを推奨:
+TDDサイクルごとにコミットを分割:
 
-- `test(pack-<domain>)`: テストケース追加（Red Phase完了時）
-- `feat(pack-<domain>)`: 機能実装（Green Phase完了時）
-- `refactor(pack-<domain>)`: リファクタリング（Refactor Phase完了時、変更がある場合のみ）
+- `test:` テストケース追加（Red Phase完了時）
+- `feat:` 機能実装（Green Phase完了時）
+- `refactor:` リファクタリング（Refactor Phase完了時、変更がある場合のみ）
 
 ### 横断的な変更
 
-- `config/`（routes除く） → `chore(config)`
-- `app/middleware/` → `feat|refactor(middleware)`
-- `doc/`, `README`, `CHANGELOG` → `docs`
+- `config/`（routes除く） → `chore:`
+- `app/middleware/` → `feat:` または `refactor:`
+- `doc/`, `README`, `CHANGELOG` → `docs:`
 
 ### コミットメッセージの形式
 
-- **タイトル**: 50〜72文字以内、日本語で要約（Conventional Commits準拠）
-  - 例: `feat(pack-user): ユーザー認証APIを追加`
-- **本文**: 箇条書きで「Before / After / 影響 / リスク / rollback / 関連Issue」
-
-  ```text
-  - Before: ユーザー登録後に自動ログインされない
-  - After: 登録成功時にJWTを発行
-  - 影響: ログインAPIへの依存
-  - rollback: revert可、スキーマ変更なし
-  - Related: #123
-  ```
-
+- **1行のみ**（本文は書かない）
+- **スコープなし**: `feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`
+- 50〜72文字以内、日本語で要約
+- 例:
+  - `feat: ユーザー認証APIを追加`
+  - `fix: ログイン時のエラーハンドリングを修正`
+  - `chore: Playwright MCPを削除しagent-browserを追加`
 - **フッター**: Claude Code生成マーカーやCo-Authored-Byトレーラーは**含めない**
-  - GitHubで「gitkado and Claude committed」と表示されることを避けるため
-  - コミットの作成者は常に `gitkado <gitkado@gmail.com>` のみ
 
 ## その他のコマンド
 
