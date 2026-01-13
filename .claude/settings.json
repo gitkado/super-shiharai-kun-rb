@@ -69,6 +69,7 @@
     ]
   },
   "enabledPlugins": {
-    "code-simplifier@claude-plugins-official": true
+    "code-simplifier@claude-plugins-official": true,
+    "ruby-lsp@claude-code-lsps": true
   }
 }
