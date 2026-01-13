@@ -1,10 +1,12 @@
 # VS Code + Ruby LSP導入 - 実装タスク
 
+> **ステータス:** フェーズ1 80%完了（Gemfile・settings.json完了、拡張インストール待ち）
+
 ## 実装TODO
 
 ### フェーズ1: 最小構成（5分で動く）
 
-#### タスク1-1: Ruby LSP拡張のインストール
+#### タスク1-1: Ruby LSP拡張のインストール（手動操作）
 
 - [ ] VS Code拡張機能マーケットプレイスで「Ruby LSP」を検索
 - [ ] 以下の拡張をインストール:
@@ -31,9 +33,9 @@ Shopify.ruby-lsp-rubocop
 
 ---
 
-#### タスク1-2: Gemfileへのruby-lsp追加
+#### タスク1-2: Gemfileへのruby-lsp追加 ✅
 
-- [ ] `Gemfile` の `group :development` に以下を追加:
+- [x] `Gemfile` の `group :development` に以下を追加:
 
 ```ruby
 group :development do
@@ -44,7 +46,7 @@ group :development do
 end
 ```
 
-- [ ] `bundle install` を実行
+- [x] `bundle install` を実行
 
 **検証コマンド:**
 
@@ -52,21 +54,20 @@ end
 bundle list | grep ruby-lsp
 ```
 
-**期待結果:**
+**実行結果:**
 
 ```text
-  * ruby-lsp (0.x.x)
-  * ruby-lsp-rails (0.x.x)
-  * ruby-lsp-rspec (0.x.x)
-  * ruby-lsp-rubocop (0.x.x)
+  * ruby-lsp (0.26.1)
+  * ruby-lsp-rails (0.4.8)
+  * ruby-lsp-rspec (0.1.28)
 ```
 
 ---
 
-#### タスク1-3: `.vscode/settings.json` の作成
+#### タスク1-3: `.vscode/settings.json` の作成 ✅
 
-- [ ] プロジェクトルートに `.vscode/settings.json` を作成（存在しない場合）
-- [ ] 以下の設定を記述:
+- [x] プロジェクトルートに `.vscode/settings.json` を作成（存在しない場合）
+- [x] 以下の設定を記述:
 
 ```json
 {
@@ -134,9 +135,9 @@ VS Codeの「出力」パネル → ドロップダウンから「Ruby LSP」を
 
 ### フェーズ2: 実務強化（任意）
 
-#### タスク2-1: Zeitwerkチェックの定期実行
+#### タスク2-1: Zeitwerkチェックの定期実行 ✅
 
-- [ ] 現在のZeitwerkエラーを確認・修正:
+- [x] 現在のZeitwerkエラーを確認・修正:
 
 ```bash
 bin/rails zeitwerk:check
