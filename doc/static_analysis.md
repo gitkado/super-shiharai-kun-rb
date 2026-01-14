@@ -47,8 +47,10 @@ Railsアプリケーションのセキュリティ脆弱性スキャナーです
 
 依存gemの既知の脆弱性をチェックします。
 
-- RubyGems Advisory Database（https://rubysec.com/）から最新の脆弱性情報を取得
+- RubyGems Advisory Database（https://rubysec.com/）から脆弱性情報を取得
 - インストールされているgemに既知の脆弱性がないかチェック
+- **ローカル開発**: キャッシュされたDBを使用（高速・安定）
+- **CI/CD**: `--update`オプションで最新DBを取得（網羅性重視）
 
 ## フックタイミングと実行内容
 
@@ -69,10 +71,12 @@ packwerk-check:     # パッケージ間の依存関係チェック
 プッシュ時に以下のチェックが実行されます:
 
 ```yaml
-bundler-audit: # 依存関係の脆弱性チェック（最新の脆弱性DBに更新してチェック）
+brakeman:       # セキュリティ脆弱性スキャン
+bundler-audit:  # 依存関係の脆弱性チェック（キャッシュDBを使用）
+rspec:          # 全テスト実行
 ```
 
-重い処理のため、プッシュ時のみ実行されます。
+**注意**: bundler-auditはローカルキャッシュのDBを使用します。CI/CDでは`--update`オプションで最新DBを取得することを推奨します。
 
 ## 手動実行コマンド
 
@@ -126,11 +130,14 @@ bundle exec brakeman -o brakeman_report.html
 ### Bundler Audit
 
 ```bash
-# 脆弱性チェック（DBを最新に更新してチェック）
+# 脆弱性チェック（ローカル開発用、キャッシュDB使用）
+bundle exec bundler-audit check
+
+# DBを最新に更新してチェック（CI/CD推奨、または定期的に実行）
 bundle exec bundler-audit check --update
 
-# DBを更新せずにチェック
-bundle exec bundler-audit check
+# DBのみ更新（キャッシュ破損時のリカバリ用）
+bundle exec bundler-audit update
 ```
 
 ## Lefthookの管理コマンド
@@ -186,18 +193,27 @@ pre-commit:
   parallel: true
   commands:
     rubocop:
-      glob: "*.rb"
-      run: bundle exec rubocop {staged_files}
+      glob: "**/*.{rb,rake}"
+      run: bundle exec rubocop --force-exclusion
     packwerk-validate:
       run: bundle exec packwerk validate
     packwerk-check:
+      glob: "**/*.rb"
       run: bundle exec packwerk check
+    rspec:
+      run: RAILS_ENV=test bin/rails db:test:prepare && bundle exec rspec --fail-fast
 
 pre-push:
   commands:
+    brakeman:
+      run: bundle exec brakeman -q --no-progress --no-pager
     bundler-audit:
-      run: bundle exec bundler-audit check --update
+      run: bundle exec bundler-audit check  # キャッシュDBを使用（安定性優先）
+    rspec:
+      run: RAILS_ENV=test bin/rails db:test:prepare && bundle exec rspec
 ```
+
+**注意**: pre-pushのbundler-auditは`--update`なしでキャッシュDBを使用します。ネットワーク問題やキャッシュ破損によるエラーを防ぐためです。CI/CDでは`--update`を使用して最新DBでチェックすることを推奨します。
 
 ### .rubocop.yml
 
@@ -343,6 +359,26 @@ bundle exec packwerk check app/packages/hello/
 ```bash
 bundle exec brakeman -I
 ```
+
+### Bundler Auditでエラーが発生する
+
+`--update`オプション使用時に以下のようなエラーが発生する場合:
+
+```
+fatal: couldn't find remote ref master
+failed to update "/Users/<username>/.local/share/ruby-advisory-db"
+```
+
+**原因**: ローカルのruby-advisory-dbキャッシュが破損または不整合な状態になっています。
+
+**解決方法**: キャッシュを削除して再構築します:
+
+```bash
+rm -rf ~/.local/share/ruby-advisory-db
+bundle exec bundler-audit update
+```
+
+**予防策**: ローカルのpre-pushフックでは`--update`なしで実行し、CI/CDで`--update`付きチェックを行う運用を推奨します。
 
 ## 関連ドキュメント
 

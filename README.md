@@ -310,7 +310,7 @@ bundle exec rspec spec/requests/hello_spec.rb
 | `bundle exec packwerk validate` | Packwerk設定検証 |
 | `bundle exec packwerk check` | 依存関係チェック    |
 | `bundle exec brakeman`   | セキュリティスキャン  |
-| `bundle exec bundler-audit check --update` | 依存gem脆弱性チェック |
+| `bundle exec bundler-audit check` | 依存gem脆弱性チェック |
 
 ### Swagger生成
 | コマンド                     | 説明          |

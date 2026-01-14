@@ -227,8 +227,20 @@ bundle exec packwerk check app/packages/hello/
 # セキュリティスキャン
 bundle exec brakeman -q
 
-# 依存gem脆弱性チェック
+# 依存gem脆弱性チェック（ローカル開発用、キャッシュDB使用）
+bundle exec bundler-audit check
+
+# DB更新してチェック（CI/CD推奨、または定期的に実行）
 bundle exec bundler-audit check --update
+
+# DBのみ更新（キャッシュ破損時のリカバリ用）
+bundle exec bundler-audit update
+```
+
+**トラブルシューティング:** bundler-auditでエラーが発生した場合
+```bash
+rm -rf ~/.local/share/ruby-advisory-db
+bundle exec bundler-audit update
 ```
 
 ### API仕様書生成
