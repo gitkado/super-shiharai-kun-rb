@@ -68,8 +68,17 @@
       }
     ]
   },
+  "extraKnownMarketplaces": {
+    "smarthr-claude-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "kufu/smarthr-claude-plugins"
+      }
+    }
+  },
   "enabledPlugins": {
     "code-simplifier@claude-plugins-official": true,
-    "ruby-lsp@claude-code-lsps": true
+    "ruby-lsp@claude-code-lsps": false,
+    "ruby-lsp@smarthr-claude-plugins": true
   }
 }
