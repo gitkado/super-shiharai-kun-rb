@@ -1,6 +1,7 @@
 {
   "env": {
-    "MAX_THINKING_TOKENS": "31999"
+    "MAX_THINKING_TOKENS": "31999",
+    "ENABLE_TOOL_SEARCH": "true"
   },
   "permissions": {
     "allow": [
@@ -68,17 +69,8 @@
       }
     ]
   },
-  "extraKnownMarketplaces": {
-    "smarthr-claude-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "kufu/smarthr-claude-plugins"
-      }
-    }
-  },
   "enabledPlugins": {
     "code-simplifier@claude-plugins-official": true,
-    "ruby-lsp@claude-code-lsps": false,
-    "ruby-lsp@smarthr-claude-plugins": true
+    "ruby-lsp@claude-plugins-official": true
   }
 }
