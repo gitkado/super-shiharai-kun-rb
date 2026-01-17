@@ -72,5 +72,6 @@
   "enabledPlugins": {
     "code-simplifier@claude-plugins-official": true,
     "ruby-lsp@claude-plugins-official": true
-  }
+  },
+  "plansDirectory": "./plans"
 }
