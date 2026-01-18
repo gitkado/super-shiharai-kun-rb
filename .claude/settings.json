@@ -71,6 +71,12 @@
       }
     ]
   },
+  "enabledPlugins": {
+    "code-simplifier@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "ruby-lsp@local-lsp": true
+  },
   "extraKnownMarketplaces": {
     "local-lsp": {
       "source": {
@@ -78,12 +84,6 @@
         "path": "./.claude/plugins/lsp"
       }
     }
-  },
-  "enabledPlugins": {
-    "code-simplifier@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "ruby-lsp@local-lsp": true
   },
   "plansDirectory": "./plans"
 }
