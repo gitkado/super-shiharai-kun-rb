@@ -1,3 +1,6 @@
-# 一時作業ファイル
+# ローカル設定（個人環境依存）
+settings.local.json
+
+# 一時作業ファイル（廃止予定 - 会話コンテキストで state 保持に移行）
 .last_staged.diff
 .commit_plan.sh

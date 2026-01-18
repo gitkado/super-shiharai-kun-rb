@@ -1,37 +1,89 @@
 {
-  "permissions": {
-    "defaultMode": "acceptEdits"
+  "env": {
+    "MAX_THINKING_TOKENS": "31999",
+    "ENABLE_TOOL_SEARCH": "true",
+    "ENABLE_LSP_TOOL": "true"
   },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bundle exec rspec --fail-fast || echo 'テスト失敗。Claudeに修正を依頼してください。'"
-          },
-          {
-            "type": "command",
-            "command": "bundle exec rubocop && bundle exec packwerk check && bundle exec brakeman -q"
-          }
-        ]
-      }
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "MultiEdit",
+      "Glob",
+      "Grep",
+      "LSP",
+      "Task",
+      "TodoWrite",
+      "WebFetch",
+      "WebSearch",
+      "NotebookEdit",
+      "Bash(bundle exec rspec:*)",
+      "Bash(bundle exec rubocop:*)",
+      "Bash(bundle exec packwerk:*)",
+      "Bash(bundle exec brakeman:*)",
+      "Bash(bundle exec rake:*)",
+      "Bash(bundle install:*)",
+      "Bash(bin/rails:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rebase:*)",
+      "Bash(gh:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)"
     ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(sudo:*)"
+    ],
+    "defaultMode": "plan"
+  },
+  "model": "claude-opus-4-5",
+  "disabledMcpjsonServers": [
+    "serena",
+    "playwright"
+  ],
+  "hooks": {
     "PreToolUse": [
       {
         "matcher": "Bash|run_bash",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -lc '\n# 受け取ったツール呼び出しのペイロード(JSON)を標準入力から読む\n# run_bash のときは .command または .args にコマンド文字列が入る想定\nPAYLOAD=$(cat);\nCMD=$(printf %s \"$PAYLOAD\" | jq -r \".command // .args // \\\"\\\" \");\n# git push を検出したらエラー終了（Claudeの実行を止める）\nif printf %s \"$CMD\" | grep -Eq \"(^|[[:space:]])git[[:space:]]+push(\\b|--)\"; then\n  echo \"🚫 git push はClaudeから実行できません。手動で実行してください。\" 1>&2\n  exit 1\nfi\nexit 0\n'"
+            "command": "bash -lc '\nPAYLOAD=$(cat);\nCMD=$(printf %s \"$PAYLOAD\" | jq -r \".command // .args // \\\"\\\" \");\n# force push を検出したらエラー終了\nif printf %s \"$CMD\" | grep -Eq \"git[[:space:]]+push[[:space:]]+.*(--force|-f)\"; then\n  echo \"🚫 force push は禁止されています。\" 1>&2\n  exit 1\nfi\nexit 0\n'"
           }
         ]
       }
     ]
   },
-  "env": {
-    "MAX_THINKKING_TOKENS": "31999"
+  "extraKnownMarketplaces": {
+    "local-lsp": {
+      "source": {
+        "source": "directory",
+        "path": "./.claude/plugins/lsp"
+      }
+    }
   },
-  "disabledMcpjsonServers": ["serena"]
+  "enabledPlugins": {
+    "code-simplifier@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "ruby-lsp@local-lsp": true
+  },
+  "plansDirectory": "./plans"
 }

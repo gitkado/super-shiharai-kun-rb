@@ -38,3 +38,6 @@
 
 # Ignore IDE settings
 /.idea
+
+# Claude Code session plans (temporary)
+/plans/
