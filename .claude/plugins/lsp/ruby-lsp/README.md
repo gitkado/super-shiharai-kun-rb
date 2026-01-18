@@ -33,3 +33,8 @@ gem install ruby-lsp
 - 参照検索（Find References）
 - ホバー情報（Hover）
 - 診断（Diagnostics）
+
+## 補足
+
+Claude公式のplugin(claude-plugins-official)に追加される流れも観測しているので、追加されたら公式版を利用する
+- https://github.com/anthropics/claude-plugins-official/pull/106
