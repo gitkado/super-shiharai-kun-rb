@@ -17,21 +17,30 @@
 
 ## Active Tasks
 
-<!-- Dev が更新するタスクリスト -->
-<!-- TDDフェーズを明示: [Red] [Green] [Refactor] -->
+> 詳細は `TaskList` ツールで確認。Task機能はセッション内の実行管理に使用。
+> 長期プロジェクトの記録は `ai/specs/<feature>/tasks.md` に永続化。
 
-_現在アクティブなタスクはありません_
+| Task ID | Subject | TDD Phase | Status | Notes |
+|---------|---------|-----------|--------|-------|
+| - | - | - | - | - |
 
-### Active Tasks の記載例
-
-```markdown
-- [x] 設計完了
-- [ ] [Red] ユーザー登録テスト作成中
-- [ ] [Green] ユーザー登録実装
-- [ ] [Refactor] リファクタリング
-```
+<!--
+Task ID参照形式の記載例:
+| #1 | 計算カラム監視戦略改善 | Red | in_progress | テスト作成中 |
+| #2 | InvoiceItem更新時の再計算 | pending | pending | #1完了後に着手 |
+-->
 
 ---
+
+## Priority Matrix（重要度×緊急度）
+
+|  | 緊急（今すぐ対応） | 非緊急（計画的に対応） |
+|---|---|---|
+| **重要** | **FIXME: 計算カラム監視戦略**（`app/packages/invoice/app/models/invoice.rb:30`）<br>影響: 明細更新時に親再計算が走らず整合性崩壊の可能性 | **請求書機能拡張（MVP次段）**<br>優先度高: 更新・削除API（早めに欲しい）<br>優先度中: ステータス管理・承認フロー（後回し可）<br>優先度低: PDF生成・支払い実行・ページネーション |
+| **重要ではない** | **（該当なし）** | **TODO: Serializer導入検討**（`app/packages/invoice/app/controllers/api/v1/invoices_controller.rb:58`）<br>API数増加時に負債化の可能性 |
+
+**補足（整備系）**
+- VS Code LSP フェーズ2-4（vendor/bundle設定 / RBS・Steep / ドキュメント）は「重要だが緊急ではない」位置づけ。RBS/Steepは「あれば良い」レベルのため後回しでOK。
 
 ## Verify Log
 
@@ -107,5 +116,7 @@ _レビュー・テスト結果はここに記録されます_
 
 <!-- 作業履歴 -->
 
+- 2026-01-25: Task機能とboard.mdの統合（Active TasksをTask ID参照形式に簡略化、dev.mdにTaskCreate/TaskUpdate追加）
 - 2026-01-13: Spec進捗を最新化（authentication完了、invoice-management完了、vscode-lsp-setup 80%）
+- 2026-01-24: 優先度マトリクス更新（FIXME最優先、請求書拡張は計画対応、Serializer検討は後回し）
 - 2026-01-04: ボード初期化

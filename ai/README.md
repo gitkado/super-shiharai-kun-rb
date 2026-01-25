@@ -113,3 +113,59 @@ Dev と Verify は同一ディレクトリを共有するため：
 - **Verify はファイル編集しない**（コード、設定、board.md）
 - **Verify は git 操作しない**（checkout, reset, commit 等）
 - **結果は報告形式**で Dev に伝達し、Dev が反映する
+
+## Task機能との併用
+
+Claude CodeのTask機能（TaskCreate, TaskUpdate, TaskList, TaskGet）と`ai/`ディレクトリは役割分担して併用する。
+
+### 役割分担
+
+| 管理対象 | 担当 | 理由 |
+|----------|------|------|
+| 実行管理（状態遷移・依存関係・担当） | Task機能 | リアルタイムの進捗追跡に最適 |
+| 統合ビュー（全体像・優先度・ログ） | board.md | 意思決定の背景・文脈を保存 |
+| 永続記録（仕様・設計・根拠） | specs/ | 変更理由を後から参照可能 |
+
+### 運用フロー
+
+```
+/dev <feature>
+  ├── ai/specs/<feature>/ 作成
+  ├── TaskCreate（TDDフェーズごとにタスク作成）
+  └── board.md Current Work 更新
+
+/dev
+  ├── TaskList で状況確認
+  ├── TaskUpdate(in_progress)
+  ├── tdd-executor 実行
+  ├── TaskUpdate(completed)
+  └── board.md Active Tasks 簡潔に更新
+
+/verify full
+  └── board.md Verify Log に結果記録
+
+/dev commit
+  ├── git commit 実行
+  ├── TaskUpdate(completed)
+  └── board.md History 更新
+
+/dev pr
+  └── gh pr create
+```
+
+### TaskCreate テンプレート
+
+```
+subject: "[Red] <機能名> - テスト作成"
+description: |
+  対象: <ファイルパス>
+  期待動作: <期待する振る舞い>
+  テストケース: <具体的なテストケース>
+activeForm: "<機能名>テスト作成中"
+```
+
+### 永続化の方針
+
+- **Task機能はセッション内の実行管理に限定**（`~/.claude/tasks/`に保存されるがセッション単位）
+- **長期プロジェクトの記録は `specs/<feature>/tasks.md` に永続化**
+- セッション開始時に必要に応じて `specs/tasks.md` からTaskCreateで復元
