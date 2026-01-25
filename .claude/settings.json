@@ -1,6 +1,5 @@
 {
   "env": {
-    "MAX_THINKING_TOKENS": "31999",
     "ENABLE_TOOL_SEARCH": "true",
     "ENABLE_LSP_TOOL": "true"
   },
@@ -18,13 +17,12 @@
       "WebFetch",
       "WebSearch",
       "NotebookEdit",
-      "Bash(bundle exec rspec:*)",
-      "Bash(bundle exec rubocop:*)",
-      "Bash(bundle exec packwerk:*)",
-      "Bash(bundle exec brakeman:*)",
-      "Bash(bundle exec rake:*)",
+      "Bash(bundle exec:*)",
+      "Bash(RAILS_ENV=* bundle exec:*)",
+      "Bash(RUBYOPT=* bundle exec:*)",
       "Bash(bundle install:*)",
       "Bash(bin/rails:*)",
+      "Bash(RAILS_ENV=* bin/rails:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
@@ -42,7 +40,15 @@
       "Bash(touch:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
-      "Bash(.claude/skills/second-opinion/*.sh:*)"
+      "Bash(.claude/skills/second-opinion/ask.sh:*)",
+      "Bash(.claude/skills/second-opinion/design.sh:*)",
+      "Bash(.claude/skills/second-opinion/exec.sh:*)",
+      "Bash(.claude/skills/second-opinion/lib.sh:*)",
+      "Bash(.claude/skills/second-opinion/review.sh:*)",
+      "Bash(.claude/skills/second-opinion/start.sh:*)",
+      "Bash(.claude/skills/second-opinion/status.sh:*)",
+      "Bash(.claude/skills/second-opinion/stop.sh:*)",
+      "Bash(asdf list:*)"
     ],
     "deny": [
       "Bash(rm:*)",

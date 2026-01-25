@@ -22,7 +22,7 @@ OUTPUT_FILE=$(create_temp_file "so-output")
 setup_cleanup_trap "$OUTPUT_FILE"
 
 # ワンショット実行
-if ! $CODEX_CMD exec $CODEX_COMMON_ARGS --output-last-message "$OUTPUT_FILE" "$PROMPT"; then
+if ! $CODEX_CMD exec $CODEX_EXEC_ARGS --output-last-message "$OUTPUT_FILE" "$PROMPT"; then
   echo "Error: codex の実行に失敗しました" >&2
   exit 1
 fi

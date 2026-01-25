@@ -31,9 +31,14 @@ if [[ -d "$SPECS_DIR" ]]; then
       # 各ファイルもシンボリックリンクチェック
       validate_safe_path "$doc_file" || continue
       filename=$(basename "$doc_file")
+      # ファイル読み込みエラーのハンドリング
+      file_content=$(head -100 "$doc_file" 2>/dev/null) || {
+        echo "Warning: ファイルの読み込みに失敗しました: $doc_file" >&2
+        continue
+      }
       DESIGN_DOC+="
 --- $filename ---
-$(head -100 "$doc_file")
+$file_content
 "
     fi
   done
@@ -75,7 +80,7 @@ CODEX_CMD=$(get_codex_command) || exit 1
 OUTPUT_FILE=$(create_temp_file "so-design-output")
 setup_cleanup_trap "$OUTPUT_FILE"
 
-if ! $CODEX_CMD exec $CODEX_COMMON_ARGS --output-last-message "$OUTPUT_FILE" "$DESIGN_PROMPT"; then
+if ! $CODEX_CMD exec $CODEX_EXEC_ARGS --output-last-message "$OUTPUT_FILE" "$DESIGN_PROMPT"; then
   echo "Error: codex の実行に失敗しました" >&2
   exit 1
 fi
