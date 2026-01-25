@@ -6,13 +6,13 @@ Claude Code用のローカルLSPプラグインマーケットプレイス。
 
 Claude Codeで以下のコマンドを実行してマーケットプレイスを追加:
 
-```
+```bash
 /plugin marketplace add ./.claude/plugins/lsp
 ```
 
 追加後、プラグインを有効化:
 
-```
+```bash
 /plugin enable ruby-lsp@local-lsp
 ```
 
@@ -28,13 +28,13 @@ Claude Codeで以下のコマンドを実行してマーケットプレイスを
 
 マーケットプレイス一覧:
 
-```
+```bash
 /plugin marketplace list
 ```
 
 有効なプラグイン一覧:
 
-```
+```bash
 /plugin list
 ```
 

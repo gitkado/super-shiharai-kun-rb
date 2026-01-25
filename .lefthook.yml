@@ -15,6 +15,10 @@ pre-commit:
     rspec:
       tags: test
       run: RAILS_ENV=test bin/rails db:test:prepare && bundle exec rspec --fail-fast
+    markdownlint:
+      tags: docs
+      glob: "**/*.md"
+      run: npx markdownlint-cli2 {staged_files}
 
 pre-push:
   commands:

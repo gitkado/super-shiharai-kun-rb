@@ -14,7 +14,7 @@ RSwagは以下を提供します:
 
 開発サーバーを起動後、以下のURLにアクセス:
 
-- Swagger UI: http://localhost:3000/api-docs
+- Swagger UI: <http://localhost:3000/api-docs>
 - 定義ファイル: `swagger/v1/swagger.yaml`
 
 ## 新しいAPIのドキュメント追加手順
@@ -72,7 +72,7 @@ RAILS_ENV=test rake rswag:specs:swaggerize
 rails s
 ```
 
-http://localhost:3000/api-docs にアクセスして、Swagger UIで確認します。
+<http://localhost:3000/api-docs> にアクセスして、Swagger UIで確認します。
 
 ## 高度な使い方
 

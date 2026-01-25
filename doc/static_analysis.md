@@ -20,6 +20,7 @@ Rubyコードスタイルと品質チェックツールです。
   - `rubocop-packs`: Packwerk/Packsとの統合
 
 **特徴:**
+
 - `frozen_string_literal: true`マジックコメントを強制（パフォーマンス向上とバグ予防）
 - Sorbet copは無効化（型アノテーションは使用しないため）
 
@@ -47,10 +48,27 @@ Railsアプリケーションのセキュリティ脆弱性スキャナーです
 
 依存gemの既知の脆弱性をチェックします。
 
-- RubyGems Advisory Database（https://rubysec.com/）から脆弱性情報を取得
+- RubyGems Advisory Database（<https://rubysec.com/）から脆弱性情報を取得>
 - インストールされているgemに既知の脆弱性がないかチェック
 - **ローカル開発**: キャッシュされたDBを使用（高速・安定）
 - **CI/CD**: `--update`オプションで最新DBを取得（網羅性重視）
+
+### markdownlint
+
+Markdownファイルのスタイルと構文をチェックします。
+
+- **ツール**: markdownlint-cli2
+- **設定ファイル**: `.markdownlint.json`, `.markdownlint-cli2.jsonc`
+- **除外対象**: `plans/`（自動生成ファイル）
+
+**主な設定方針:**
+
+- MD013（行長制限）: 無効化（日本語対応）
+- MD024: siblings_only（セクション内での重複見出しは許可）
+- MD033: 一部HTML要素を許可（`<br>`, `<details>`, `<summary>`等）
+- MD040: コードブロックの言語指定を要求
+- MD041（最初の行がh1）: 無効化
+- MD060（テーブルスペーシング）: 無効化
 
 ## フックタイミングと実行内容
 
@@ -62,6 +80,7 @@ Railsアプリケーションのセキュリティ脆弱性スキャナーです
 rubocop:            # 変更されたRubyファイルのスタイルチェック
 packwerk-validate:  # Packwerk設定の検証
 packwerk-check:     # パッケージ間の依存関係チェック
+markdownlint:       # Markdownファイルのスタイルチェック
 ```
 
 これらはコミット前に実行され、違反があればコミットが中断されます。
@@ -140,6 +159,19 @@ bundle exec bundler-audit check --update
 bundle exec bundler-audit update
 ```
 
+### markdownlint
+
+```bash
+# 全Markdownファイルをチェック
+npx markdownlint-cli2 "**/*.md"
+
+# 自動修正（可能なもののみ）
+npx markdownlint-cli2 "**/*.md" --fix
+
+# 特定のディレクトリのみチェック
+npx markdownlint-cli2 "doc/**/*.md"
+```
+
 ## Lefthookの管理コマンド
 
 ### フックのインストール
@@ -202,6 +234,9 @@ pre-commit:
       run: bundle exec packwerk check
     rspec:
       run: RAILS_ENV=test bin/rails db:test:prepare && bundle exec rspec --fail-fast
+    markdownlint:
+      glob: "**/*.md"
+      run: npx markdownlint-cli2 {staged_files}
 
 pre-push:
   commands:
@@ -325,11 +360,13 @@ bundle update rubocop rubocop-rails-omakase brakeman bundler-audit
 ### フックが実行されない
 
 1. Lefthookがインストールされているか確認:
+
    ```bash
    bundle exec lefthook install
    ```
 
 2. `.git/hooks/`にフックスクリプトが存在するか確認:
+
    ```bash
    ls -la .git/hooks/
    ```
@@ -364,7 +401,7 @@ bundle exec brakeman -I
 
 `--update`オプション使用時に以下のようなエラーが発生する場合:
 
-```
+```text
 fatal: couldn't find remote ref master
 failed to update "/Users/<username>/.local/share/ruby-advisory-db"
 ```

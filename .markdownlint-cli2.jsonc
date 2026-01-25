@@ -1,0 +1,13 @@
+{
+  "config": {
+    "extends": ".markdownlint.json"
+  },
+  "ignores": [
+    "plans/**",
+    "node_modules/**",
+    "vendor/**",
+    "tmp/**",
+    "log/**",
+    ".bundle/**"
+  ]
+}

@@ -5,10 +5,12 @@ Ruby on Rails 7.2で構築した企業向け支払い管理システムのREST A
 ## クイックスタート
 
 ### 前提条件
+
 - Ruby 3.4.6
 - Docker & Docker Compose
 
 ### 開発環境起動（推奨）
+
 ```bash
 # 1. PostgreSQL起動
 docker compose up -d
@@ -24,6 +26,7 @@ rails s
 ```
 
 ### テスト実行
+
 ```bash
 # 全テスト実行
 bundle exec rspec
@@ -82,6 +85,7 @@ bundle exec rspec spec/requests/hello_spec.rb
 本プロジェクトの認証機能は **BCrypt + JWT の直接利用** により実装されています。
 
 **現在の実装方針:**
+
 - **BCrypt**: パスワードハッシュ化（`account_password_hashes`テーブル）
 - **JWT**: ステートレストークン認証（`Authentication::JwtService`）
 - **実装場所**: `app/packages/authentication/` パッケージ
@@ -90,11 +94,13 @@ bundle exec rspec spec/requests/hello_spec.rb
   - `POST /api/v1/auth/login` - ログイン
 
 **この設計判断の理由:**
+
 1. **本プロジェクトの主目的は請求管理ドメインの実装**
 2. **認証機能は標準的な実装で十分** - 初期フェーズではシンプルな構成を優先
 3. **保守性**: Rails標準パターンに従い、Fat Model, Skinny Controllerの方針を維持
 
 **将来的な拡張:**
+
 - パスワードリセット、2FA、メール確認等の高度な認証機能が必要になった場合、[Rodauth](https://rodauth.jeremyevans.net/)への段階的移行を検討
 - `rodauth-rails` gemは依存関係に含まれていますが、現在は直接利用していません（将来の拡張用）
 
@@ -110,7 +116,7 @@ bundle exec rspec spec/requests/hello_spec.rb
 
 #### 全体構造
 
-```
+```text
 app/
 ├── channels/                         # ActionCable（WebSocket）- 共通基盤のみ
 │   └── application_cable/
@@ -154,18 +160,21 @@ app/
 #### 重要な原則
 
 **app直下（共通基盤・インフラ層）:**
+
 - ✅ 基底クラス（Application*）
 - ✅ 全パッケージで共有する技術的な機能
 - ✅ Rackミドルウェア
 - ❌ ビジネスロジック → `app/packages/` へ
 
 **app/packages/（ビジネスロジック層）:**
+
 - ✅ 全てのドメイン固有のController, Model, Job, Mailer
 - ✅ ビジネスルール、機能実装
 - ✅ Railsの標準構成（MVC）に従う
 - ✅ Fat Model, Skinny Controller
 
 **公開APIの方針:**
+
 - デフォルトは全て非公開（packages内のapp/配下）
 - 他パッケージから利用されるものだけ `app/public/` に配置
 
@@ -186,6 +195,7 @@ graph TD
 ```
 
 **依存の方向性ルール:**
+
 - 各ドメインパッケージはルートパッケージに依存できる
 - 各ドメインパッケージは認証パッケージに依存できる
 - **認証パッケージは他のドメインに依存してはいけない**（Packwerkが強制）
@@ -242,7 +252,7 @@ bundle exec rspec spec/requests/hello_spec.rb
 
 このプロジェクトでは、[RSwag](https://github.com/rswag/rswag)を使用してAPI仕様書を自動生成しています。
 
-- Swagger UI: http://localhost:3000/api-docs
+- Swagger UI: <http://localhost:3000/api-docs>
 - 定義ファイル: `swagger/v1/swagger.yaml`
 
 詳細は [API仕様書ガイド](doc/api_documentation.md) を参照してください。
@@ -295,6 +305,7 @@ bundle exec rspec spec/requests/hello_spec.rb
 ## 主要コマンド
 
 ### 必須コマンド
+
 | コマンド              | 説明            |
 |-------------------|---------------|
 | `rails s`         | 開発サーバー起動      |
@@ -303,6 +314,7 @@ bundle exec rspec spec/requests/hello_spec.rb
 | `rails db:migrate` | DBマイグレーション実行 |
 
 ### コード品質
+
 | コマンド                     | 説明          |
 |--------------------------|-------------|
 | `bundle exec rubocop -a` | コードスタイル自動修正 |
@@ -313,6 +325,7 @@ bundle exec rspec spec/requests/hello_spec.rb
 | `bundle exec bundler-audit check` | 依存gem脆弱性チェック |
 
 ### Swagger生成
+
 | コマンド                     | 説明          |
 |--------------------------|-------------|
 | `RAILS_ENV=test rake rswag:specs:swaggerize` | Swagger YAML生成 |
@@ -320,6 +333,7 @@ bundle exec rspec spec/requests/hello_spec.rb
 ## 環境設定
 
 ### データベース設定
+
 | 項目       | 値                              |
 |----------|--------------------------------|
 | Host     | localhost                      |
@@ -329,11 +343,13 @@ bundle exec rspec spec/requests/hello_spec.rb
 | Database | super_shiharai_kun_development |
 
 ### PostgreSQL停止
+
 ```bash
 docker compose down
 ```
 
 ### ヘルスチェックAPI
+
 - エンドポイント: `GET /up`
 - ハンドラ: Rails標準の `rails/health#show`
 - 挙動: アプリケーションが例外なく起動できれば HTTP 200、失敗した場合は 500 を返す
@@ -356,21 +372,25 @@ curl -if http://localhost:3000/up
 ## 開発のポイント
 
 ### アーキテクチャ設計
+
 - モジュラーモノリス: パッケージ単位でドメインを分離
 - 依存関係の明示: Packwerkによる依存管理と強制
 - 公開APIの最小化: `app/public/` による明示的な公開
 
 ### テスト設計
+
 - RSpec: リクエストスペックによるAPI動作検証
 - RSwag: テストと仕様書の同期
 - パッケージ単位: 独立したテストの記述
 
 ### セキュリティ
+
 - エラーハンドリング: グローバルエラーハンドラーによる統一的な処理
 - バリデーション: Railsの標準バリデーション機構
 - 静的解析: Lefthook + RuboCop + Brakeman + Bundler Audit
 
 ### ログとトレーシング
+
 - JSON形式ログ: SemanticLoggerによる構造化ログ
 - トレースID: リクエストごとの一意なIDで横断的な追跡が可能
 - モジュラー対応: パッケージごとに独立したロガー

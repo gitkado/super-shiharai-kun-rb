@@ -6,7 +6,7 @@ Claude Codeのサブエージェント（architect / implementer / committer）�
 
 ## ディレクトリ構造
 
-```
+```text
 specs/
 ├─ README.md            # 本ガイド
 └─ <feature_slug>/      # 機能単位のディレクトリ（ケバブケース）
@@ -107,7 +107,7 @@ specs/
 
 ## 更新フロー
 
-```
+```text
 [要件整理]                    [設計検討]                    [実装]
     │                             │                           │
     ▼                             ▼                           ▼

@@ -84,6 +84,7 @@ description: codex（OpenAI CLI）を呼び出してセカンドオピニオン�
 **実行:** `.claude/skills/second-opinion/start.sh`
 
 **動作:**
+
 1. `codex exec --json` でセッションを開始
 2. JSONL出力からセッションIDを抽出
 3. tmux user optionにセッションIDを保存
@@ -107,6 +108,7 @@ codexセッションの状態とセッションIDを確認します。
 **実行:** `.claude/skills/second-opinion/ask.sh "<prompt>"`
 
 **動作:**
+
 1. 保存されたセッションIDを取得
 2. `codex exec resume <session_id> --json` でプロンプト送信
 3. JSONL出力から最新の `agent_message` を抽出
@@ -248,7 +250,7 @@ git add <file>
 
 `codex exec resume` を使用してセッションを継続します。
 
-```
+```text
 +---------------------------------------------------------------+
 |  Claude Code (Main)                                           |
 |                                                               |
@@ -263,7 +265,7 @@ git add <file>
 
 ## ディレクトリ構成
 
-```
+```text
 .claude/skills/second-opinion/
 ├── SKILL.md      # このファイル（スキル定義）
 ├── lib.sh        # 共通ライブラリ（各スクリプトから source）

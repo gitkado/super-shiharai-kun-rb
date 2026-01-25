@@ -663,6 +663,7 @@ LEFTHOOK=0 git commit -m "message"
 #### 実施内容
 
 **タスク1-2: Gemfileへのruby-lsp追加**
+
 - [x] `Gemfile` の `group :development, :test` に以下を追加:
   - `ruby-lsp` (0.26.1)
   - `ruby-lsp-rails` (0.4.8)
@@ -671,6 +672,7 @@ LEFTHOOK=0 git commit -m "message"
 - [x] `bundle install` 実行完了
 
 **タスク1-3: `.vscode/settings.json` の作成**
+
 - [x] `.vscode/` ディレクトリ作成
 - [x] 以下の設定を記述:
   - `rubyLsp.rubyVersionManager: "bundler"` - asdf環境での安定動作
@@ -680,6 +682,7 @@ LEFTHOOK=0 git commit -m "message"
   - `editor.inlayHints.enabled: "on"` - 引数名・型情報をインライン表示
 
 **タスク2-1: Zeitwerkチェックの実行**
+
 - [x] `bin/rails zeitwerk:check` 実行
 - [x] 結果: **All is good!** - Zeitwerk準拠を確認
 - ⚠️ DEPRECATION警告あり（影響なし、後で対応）:
@@ -687,6 +690,7 @@ LEFTHOOK=0 git commit -m "message"
   - rswag-api, rswag-uiのメソッド名変更予定
 
 **タスク4-1: README.md への参照**
+
 - [x] README.md には既にVS Code LSPセクションが存在（35-47行目）
 - [x] `specs/vscode-lsp-setup/` へのリンクが記載済み
 

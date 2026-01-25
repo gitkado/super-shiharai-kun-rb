@@ -23,7 +23,7 @@ gem install ruby-lsp
 
 マーケットプレイス経由で有効化（親ディレクトリのREADME参照）:
 
-```
+```bash
 /plugin enable ruby-lsp@local-lsp
 ```
 
@@ -37,4 +37,5 @@ gem install ruby-lsp
 ## 補足
 
 Claude公式のplugin(claude-plugins-official)に追加される流れも観測しているので、追加されたら公式版を利用する
-- https://github.com/anthropics/claude-plugins-official/pull/106
+
+- <https://github.com/anthropics/claude-plugins-official/pull/106>

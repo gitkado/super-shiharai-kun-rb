@@ -1,0 +1,11 @@
+# 自動生成ファイル
+plans/
+
+# 依存関係・ビルド成果物
+node_modules/
+vendor/
+tmp/
+log/
+
+# バンドルキャッシュ
+.bundle/

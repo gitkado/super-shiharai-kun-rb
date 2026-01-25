@@ -28,7 +28,7 @@ disable-model-invocation: true
 
 TDDサイクルごとにコミットを分割:
 
-```
+```text
 1. test: テストケース追加
    → Red Phase 完了時
 
@@ -41,7 +41,7 @@ TDDサイクルごとにコミットを分割:
 
 ### TDDコミットの例
 
-```
+```text
 # Red Phase
 test: 請求書承認APIのテストを追加
 

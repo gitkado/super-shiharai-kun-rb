@@ -36,6 +36,7 @@ bundle exec rubocop                  # コードスタイル
 bundle exec packwerk check           # パッケージ境界
 bundle exec brakeman -q              # セキュリティ
 bundle exec bundler-audit check      # 依存gem脆弱性
+npx markdownlint-cli2 "**/*.md"      # Markdownスタイル
 ```
 
 **テスト品質ツール:**
@@ -70,6 +71,7 @@ Lefthookによる自動チェックが設定済み:
 - RuboCop（変更ファイルのみ）
 - Packwerk validate + check（変更ファイルのみ）
 - RSpec（fail-fast、DB自動準備）
+- markdownlint（変更ファイルのみ）
 
 **pre-push:**
 

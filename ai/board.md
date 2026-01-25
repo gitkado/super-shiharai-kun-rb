@@ -40,6 +40,7 @@ Task ID参照形式の記載例:
 | **重要ではない** | **（該当なし）** | **TODO: Serializer導入検討**（`app/packages/invoice/app/controllers/api/v1/invoices_controller.rb:58`）<br>API数増加時に負債化の可能性 |
 
 **補足（整備系）**
+
 - VS Code LSP フェーズ2-4（vendor/bundle設定 / RBS・Steep / ドキュメント）は「重要だが緊急ではない」位置づけ。RBS/Steepは「あれば良い」レベルのため後回しでOK。
 
 ## Verify Log

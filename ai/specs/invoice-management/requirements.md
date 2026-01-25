@@ -3,12 +3,14 @@
 ## 背景・目的
 
 ### 背景
+
 - 法人向け支払い代行サービスのバックエンドシステム
 - 法人顧客が受け取った請求書（支払側）を電子化して管理する必要がある
 - 支払い代行手数料を自動計算し、顧客に請求する仕組みが必要
 - 認証機能（`authentication` パッケージ）が実装済みであり、ユーザー単位でのアクセス制御が可能
 
 ### 目的
+
 - 請求書情報の登録・一覧取得機能を提供
 - 支払額から手数料・税額・合計金額を自動計算
 - JWT認証により、ユーザーごとの請求書管理を実現
@@ -16,7 +18,8 @@
 - 将来的な支払い実行機能の基盤を構築
 
 ### 選定理由（Kotlinリファレンス実装からの移植）
-- 参考実装: https://github.com/gitkado/super-shiharai-kun
+
+- 参考実装: <https://github.com/gitkado/super-shiharai-kun>
 - Kotlinの値オブジェクト（`Money`, `Rate`）をRails ActiveRecord Attributesで実装
 - ビジネスロジック（手数料計算）をモデル層に集約（Fat Model方針）
 - 環境変数による設定（`INVOICE_FEE_RATE`, `INVOICE_TAX_RATE`）で柔軟性を確保
@@ -32,6 +35,7 @@
 ## スコープ/非スコープ
 
 ### スコープ（今回実装）
+
 - ✅ 請求書の登録（`POST /api/v1/invoices`）
   - `paymentAmount` のみ入力、他は自動計算
   - `issueDate`, `paymentDueDate` は手動入力
@@ -44,6 +48,7 @@
 - ✅ JWT認証必須（全APIで `authenticate_account!`）
 
 ### 非スコープ（将来対応）
+
 - ❌ 請求書の更新・削除API
 - ❌ ステータス管理（全て支払確定済みの前提）
 - ❌ 承認フロー（承認待ち・承認済み・却下等）
@@ -58,6 +63,7 @@
 ## 業務/ユーザーフロー
 
 ### 請求書登録フロー
+
 ```mermaid
 sequenceDiagram
     participant Client as クライアント
@@ -77,6 +83,7 @@ sequenceDiagram
 ```
 
 **手数料計算ロジック（`before_validation` コールバック）:**
+
 ```ruby
 def calculate_fees_and_taxes
   self.fee_rate ||= Rate.new(AppConfig.invoice_fee_rate)
@@ -89,6 +96,7 @@ end
 ```
 
 ### 請求書一覧取得フロー
+
 ```mermaid
 sequenceDiagram
     participant Client as クライアント
@@ -108,17 +116,20 @@ sequenceDiagram
 ## 非機能要件
 
 ### セキュリティ
+
 - [ ] JWT認証必須（全APIで `before_action :authenticate_account!`）
 - [ ] ユーザーIDはJWTから取得（パラメータでの偽装を防止）
 - [ ] 他ユーザーの請求書へのアクセス禁止（自動フィルタ）
 - [ ] SQLインジェクション対策（Railsのパラメータ化クエリ）
 
 ### パフォーマンス
+
 - [ ] インデックス設定（`user_id`, `payment_due_date`）
 - [ ] N+1クエリ対策（Bulletで検出）
 - [ ] 一覧取得は1クエリで完結（JOIN不要）
 
 ### データ整合性
+
 - [ ] 金額フィールドは `decimal(15, 2)` で小数点管理
 - [ ] 料率フィールドは `decimal(5, 4)` で精度確保（0.0400 = 4%）
 - [ ] `user_id` 外部キー制約（`ON DELETE CASCADE`）
@@ -126,11 +137,13 @@ sequenceDiagram
 - [ ] `payment_due_date` は `issue_date` 以降（バリデーション）
 
 ### 可用性
+
 - [ ] エラー時も統一的なJSONレスポンス
 - [ ] `trace_id` を含めてログ追跡可能
 - [ ] バリデーションエラーは詳細なメッセージを返却
 
 ### 拡張性
+
 - [ ] 将来的な支払い実行機能との連携を考慮
 - [ ] ステータス管理を追加可能な設計（現時点では未実装）
 - [ ] PDF生成機能を追加可能な設計（ActiveStorageとの統合余地）
@@ -148,12 +161,14 @@ sequenceDiagram
 ## 観測指標
 
 ### 成功指標
+
 - [ ] 請求書登録成功率 > 95%
 - [ ] 一覧取得レスポンスタイム < 500ms (p95)
 - [ ] 手数料計算の正確性 = 100%（テストカバレッジ）
 - [ ] ユーザーごとのアクセス制御漏れ = 0件
 
 ### モニタリング項目
+
 - 請求書登録API (`POST /api/v1/invoices`) のレスポンスタイム・エラー率
 - 一覧取得API (`GET /api/v1/invoices`) のレスポンスタイム・エラー率
 - JWT検証失敗率（401エラー）

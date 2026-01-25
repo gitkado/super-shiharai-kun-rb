@@ -18,6 +18,7 @@
 **最終決定:** BCrypt + JWT gem 直接利用
 
 **変更理由:**
+
 1. **本プロジェクトの主目的は請求管理ドメインの実装** - 認証は標準的な実装で十分
 2. **シンプルさ優先** - RailsのFat Model, Skinny Controller方針に従い、保守しやすい構成
 3. **Rodauth APIの複雑さ** - Rails統合に追加の学習コストがかかる
@@ -29,7 +30,7 @@
 
 ## パッケージ構造
 
-```
+```text
 app/packages/authentication/
 ├── package.yml                           # Packwerk設定
 ├── app/
@@ -71,12 +72,14 @@ public_path: app/public
 ### 1. Account (`app/models/account.rb`)
 
 **責務:**
+
 - ユーザー情報管理
 - メールアドレスバリデーション
 - メール正規化（小文字変換）
 - アカウントステータス管理（Enum）
 
 **Enum定義:**
+
 ```ruby
 enum :status, {
   unverified: "unverified",
@@ -87,21 +90,25 @@ enum :status, {
 ```
 
 **バリデーション:**
+
 - `email`: 必須、メール形式、一意性（大文字小文字区別なし）
 
 ### 2. AccountPasswordHash (`app/models/account_password_hash.rb`)
 
 **責務:**
+
 - BCryptパスワードハッシュの保存
 - `belongs_to :account`
 
 ### 3. Authentication::JwtService (`app/public/authentication/jwt_service.rb`)
 
 **責務:**
+
 - JWT生成・検証（公開API）
 - 他パッケージから利用可能
 
 **主要メソッド:**
+
 ```ruby
 module Authentication
   module JwtService
@@ -119,11 +126,13 @@ end
 ### 4. Authentication::Authenticatable (`app/public/authentication/authenticatable.rb`)
 
 **責務:**
+
 - 他パッケージから利用可能な認証ヘルパー
 - JWT検証・デコード
 - `current_account` 提供
 
 **使用例:**
+
 ```ruby
 class SomeController < ApplicationController
   before_action :authenticate_account!
@@ -139,6 +148,7 @@ end
 **エンドポイント:** `POST /api/v1/auth/register`
 
 **処理フロー:**
+
 1. パラメータ検証
 2. Accountレコード作成
 3. BCryptでパスワードハッシュ化
@@ -151,6 +161,7 @@ end
 **エンドポイント:** `POST /api/v1/auth/login`
 
 **処理フロー:**
+
 1. メールアドレスでAccount検索
 2. BCryptでパスワード検証
 3. JWT発行
@@ -162,7 +173,7 @@ end
 
 ### ER図
 
-```
+```text
 accounts ||--|| account_password_hashes : has_one
 
 accounts {
@@ -207,6 +218,7 @@ account_password_hashes {
 ### POST /api/v1/auth/register
 
 **リクエスト:**
+
 ```json
 {
   "email": "user@example.com",
@@ -215,6 +227,7 @@ account_password_hashes {
 ```
 
 **レスポンス（成功 201）:**
+
 ```json
 {
   "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -227,6 +240,7 @@ account_password_hashes {
 ```
 
 **レスポンス（失敗 422）:**
+
 ```json
 {
   "error": {
@@ -240,6 +254,7 @@ account_password_hashes {
 ### POST /api/v1/auth/login
 
 **リクエスト:**
+
 ```json
 {
   "email": "user@example.com",
@@ -248,6 +263,7 @@ account_password_hashes {
 ```
 
 **レスポンス（成功 200）:**
+
 ```json
 {
   "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -260,6 +276,7 @@ account_password_hashes {
 ```
 
 **レスポンス（失敗 401）:**
+
 ```json
 {
   "error": {
@@ -296,6 +313,7 @@ account_password_hashes {
 ### Rodauthへの移行
 
 将来、以下の機能が必要になった場合、Rodauthへの段階的移行を検討：
+
 - パスワードリセット（メール送信）
 - 2要素認証
 - アカウントロック機能

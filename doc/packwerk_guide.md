@@ -88,13 +88,15 @@ dependencies:
 依存関係は**一方向のみ**に保つことが重要です。循環依存は避けるべきです。
 
 **良い例:**
-```
+
+```text
 payments → authentication → root
 hello → authentication → root
 ```
 
 **悪い例（循環依存）:**
-```
+
+```text
 payments → authentication → payments  # NG!
 ```
 

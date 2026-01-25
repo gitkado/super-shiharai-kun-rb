@@ -44,7 +44,7 @@
 
 ## パッケージ構造案
 
-```
+```text
 app/packages/invoice/
 ├── package.yml                           # Packwerk設定
 ├── app/
@@ -88,12 +88,14 @@ public_path: app/public
 ### 1. Invoice (`app/models/invoice.rb`)
 
 **責務:**
+
 - 請求書データの永続化・バリデーション
 - 手数料・税額・合計金額の自動計算（`before_validation` コールバック）
 - 値オブジェクト（`Money`, `Rate`）の管理
 - スコープメソッド提供（`between_payment_due_dates`）
 
 **主要メソッド:**
+
 ```ruby
 class Invoice < ApplicationRecord
   # ActiveRecord Attributes（値オブジェクト）
@@ -151,6 +153,7 @@ end
 ```
 
 **カラム定義:**
+
 - `id` (bigint, PK)
 - `user_id` (bigint, FK → accounts.id, NOT NULL, INDEX)
 - `issue_date` (date, NOT NULL)
@@ -167,6 +170,7 @@ end
 ### 2. Invoice::Money (`app/models/invoice/money.rb`)
 
 **責務:**
+
 - 金額を表す値オブジェクト
 - `BigDecimal` による精度保証
 - 演算メソッド提供（`+`, `-`, `*`）
@@ -174,6 +178,7 @@ end
 - **名前空間:** `Invoice::Money`（他gemとの衝突を防ぐため）
 
 **実装例:**
+
 ```ruby
 class Invoice::Money
   include Comparable
@@ -242,12 +247,14 @@ end
 ### 3. Invoice::Rate (`app/models/invoice/rate.rb`)
 
 **責務:**
+
 - 料率（割合）を表す値オブジェクト
 - `BigDecimal` による精度保証（小数点4桁）
 - ActiveRecord Attributesとの統合
 - **名前空間:** `Invoice::Rate`（他gemとの衝突を防ぐため）
 
 **実装例:**
+
 ```ruby
 class Invoice::Rate
   include Comparable
@@ -299,16 +306,19 @@ end
 ### 4. Api::V1::InvoicesController
 
 **エンドポイント:**
+
 - `POST /api/v1/invoices` - 請求書登録
 - `GET /api/v1/invoices` - 請求書一覧取得
 
 **責務:**
+
 - JWT認証（`before_action :authenticate_account!`）
 - パラメータ受け取り・エラーハンドリング
 - レスポンス整形（JSON）
 - `current_account` からユーザーIDを取得
 
 **実装例:**
+
 ```ruby
 module Api
   module V1
@@ -379,6 +389,7 @@ end
 ```
 
 **リクエスト例（POST /api/v1/invoices）:**
+
 ```json
 {
   "issue_date": "2025-01-15",
@@ -388,6 +399,7 @@ end
 ```
 
 **レスポンス例（201 Created）:**
+
 ```json
 {
   "id": 1,
@@ -406,12 +418,14 @@ end
 ```
 
 **リクエスト例（GET /api/v1/invoices）:**
-```
+
+```http
 GET /api/v1/invoices?start_date=2025-01-01&end_date=2025-01-31
 Authorization: Bearer <JWT>
 ```
 
 **レスポンス例（200 OK）:**
+
 ```json
 {
   "invoices": [
@@ -473,23 +487,28 @@ erDiagram
 | updated_at | timestamp | NOT NULL | 更新日時 |
 
 **インデックス:**
+
 - PRIMARY KEY: `id`
 - INDEX: `user_id`
 - INDEX: `payment_due_date`
 - COMPOSITE INDEX: `(user_id, payment_due_date)` （将来追加検討）
 
 **外部キー:**
+
 - `user_id` → `accounts.id` (ON DELETE CASCADE)
 
 **DB制約:**
+
 - `CHECK (payment_amount > 0)`（PostgreSQL）
 
 ## 公開API・イベント
 
 ### 公開API（他パッケージ向け）
+
 今回は公開APIなし（将来的に支払い実行機能で必要になる可能性）
 
 ### 内部API（非公開）
+
 - `Api::V1::InvoicesController` → 外部公開（HTTP API）だがパッケージ内部実装
 - `Invoice` モデル → パッケージ内部のみ
 - `Money`, `Rate` → パッケージ内部のみ（将来的に共通化検討）
@@ -561,11 +580,13 @@ graph TD
 ```
 
 **依存ルール:**
+
 - ✅ `invoice` → ルートパッケージ（`.`）
 - ✅ `invoice` → `authentication`（JWT認証機能）
 - ❌ `invoice` → 他のドメインパッケージ（禁止）
 
 **利用する公開API:**
+
 - `Authentication::Authenticatable` → `before_action :authenticate_account!`
 - `current_account` → `Account` インスタンス（`id`, `email` のみ参照）
 
@@ -576,6 +597,7 @@ graph TD
 **対象:** `Invoice`, `Invoice::Money`, `Invoice::Rate`
 
 **テストケース（Invoice）:**
+
 - バリデーション
   - `user_id`, `issue_date`, `payment_amount`, `payment_due_date` 必須
   - `payment_due_date` は `issue_date` 以降
@@ -590,6 +612,7 @@ graph TD
   - 開始日・終了日の境界値テスト
 
 **テストケース（Invoice::Money）:**
+
 - 初期化（文字列、数値、BigDecimal）
 - 演算（加算、減算、乗算）
 - 比較（`<`, `>`, `==`）
@@ -597,6 +620,7 @@ graph TD
 - ActiveRecord Attributes統合
 
 **テストケース（Invoice::Rate）:**
+
 - 初期化（文字列、数値、BigDecimal）
 - 比較（`<`, `>`, `==`）
 - 丸め（小数点4桁）
@@ -604,6 +628,7 @@ graph TD
 - ActiveRecord Attributes統合
 
 **ツール:**
+
 - RSpec
 - shoulda-matchers（バリデーションマッチャー）
 - FactoryBot
@@ -617,6 +642,7 @@ graph TD
 **テストケース:**
 
 #### POST /api/v1/invoices
+
 - ✅ 正常系: 請求書登録成功、手数料自動計算
 - ✅ 正常系: カスタム料率での計算（環境変数）
 - ❌ 異常系: JWT未提供（401）
@@ -626,6 +652,7 @@ graph TD
 - ❌ 異常系: `payment_due_date` が `issue_date` より前（422）
 
 #### GET /api/v1/invoices
+
 - ✅ 正常系: 一覧取得（全件）
 - ✅ 正常系: 期間検索（`start_date`, `end_date`）
 - ✅ 正常系: 空配列返却（該当なし）
@@ -633,6 +660,7 @@ graph TD
 - ❌ 異常系: 他ユーザーの請求書が含まれない（アクセス制御）
 
 **ツール:**
+
 - RSpec Request Spec
 - RSwag（OpenAPI仕様生成）
 
@@ -641,12 +669,14 @@ graph TD
 ### 3. セキュリティテスト
 
 **確認項目:**
+
 - [ ] JWT認証が全APIで機能している
 - [ ] `user_id` をパラメータで偽装できない
 - [ ] 他ユーザーの請求書にアクセスできない
 - [ ] SQLインジェクション対策（パラメータ化クエリ）
 
 **ツール:**
+
 - Brakeman（静的解析）
 - Bundler Audit（gem脆弱性チェック）
 
@@ -675,11 +705,13 @@ RAILS_ENV=test bundle exec rake rswag:specs:swaggerize
 **影響:** ActiveRecord Attributesとの統合が複雑、デバッグが困難
 
 **対策:**
+
 - ユニットテストで徹底的に検証
 - `to_s` メソッドでデバッグ出力を充実
 - Kotlinリファレンス実装を参考に実装
 
 **代替案:**
+
 - プリミティブ型（`BigDecimal`）のみ使用 → 型安全性低下、演算メソッドなし
 
 ### リスク2: 環境変数の設定ミス
@@ -687,11 +719,13 @@ RAILS_ENV=test bundle exec rake rswag:specs:swaggerize
 **影響:** 手数料率が誤った値になる、計算エラー
 
 **対策:**
+
 - `.env.example` にデフォルト値とコメントを明記
 - `ENV.fetch` でキー未設定時にエラー発生
 - テストで環境変数を上書きして検証
 
 **代替案:**
+
 - DB設定テーブルで管理 → 今回はオーバーエンジニアリング
 
 ### リスク3: 手数料計算の丸め誤差
@@ -699,6 +733,7 @@ RAILS_ENV=test bundle exec rake rswag:specs:swaggerize
 **影響:** 金額が1円ずれる可能性
 
 **対策:**
+
 - `BigDecimal` で計算、小数点2桁で丸め
 - テストで境界値検証
 - Kotlinリファレンス実装と同じロジック
@@ -708,10 +743,12 @@ RAILS_ENV=test bundle exec rake rswag:specs:swaggerize
 **影響:** アカウント削除時に請求書も削除される
 
 **対策:**
+
 - `ON DELETE CASCADE` を設定（仕様として許容）
 - 将来的に論理削除（soft delete）を検討
 
 **代替案:**
+
 - `ON DELETE RESTRICT` → アカウント削除不可、運用が複雑化
 
 ### リスク5: ページネーションなし
@@ -719,34 +756,41 @@ RAILS_ENV=test bundle exec rake rswag:specs:swaggerize
 **影響:** 大量データ時にレスポンスが遅延
 
 **対策:**
+
 - 初期リリースは許容範囲（1ユーザーあたり数百件想定）
 - 将来的に `kaminari` や `pagy` で対応
 
 **代替案:**
+
 - 初期実装でページネーション → スコープ肥大化
 
 ## マイグレーションパス
 
 ### Phase 1: 基盤実装（今回）
+
 - 請求書登録・一覧取得API
 - 手数料自動計算
 - 値オブジェクト（Money, Rate）
 - JWT認証
 
 ### Phase 2: 検索機能拡張（将来）
+
 - ページネーション
 - ソート機能
 - 複合検索（金額範囲、発行日等）
 
 ### Phase 3: ステータス管理（将来）
+
 - ステータスカラム追加（未払い・支払済み等）
 - ステータス遷移管理（状態マシン）
 
 ### Phase 4: 支払い実行機能（将来）
+
 - `payment` パッケージとの連携
 - 支払いステータス同期
 
 ### Phase 5: PDF管理（将来）
+
 - ActiveStorage統合
 - PDF生成・アップロード
 - PDF一覧・ダウンロード

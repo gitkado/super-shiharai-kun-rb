@@ -4,7 +4,7 @@ Claude Codeの開発支援ディレクトリ。`/dev` と `/verify` コマンド
 
 ## ディレクトリ構造
 
-```
+```text
 ai/
 ├── board.md              # 作業ボード（現在の実装状況）
 ├── specs/                # 機能仕様（永続保存）
@@ -128,7 +128,7 @@ Claude CodeのTask機能（TaskCreate, TaskUpdate, TaskList, TaskGet）と`ai/`�
 
 ### 運用フロー
 
-```
+```text
 /dev <feature>
   ├── ai/specs/<feature>/ 作成
   ├── TaskCreate（TDDフェーズごとにタスク作成）
@@ -155,7 +155,7 @@ Claude CodeのTask機能（TaskCreate, TaskUpdate, TaskList, TaskGet）と`ai/`�
 
 ### TaskCreate テンプレート
 
-```
+```yaml
 subject: "[Red] <機能名> - テスト作成"
 description: |
   対象: <ファイルパス>

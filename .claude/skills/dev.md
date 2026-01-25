@@ -11,6 +11,7 @@ argument-hint: "<feature> | commit | pr"
 ### `/dev <feature>` - 新規機能開始
 
 `/design` スキルを実行:
+
 1. `ai/specs/<feature>/` にドキュメント作成
 2. **TaskCreate** でTDDフェーズごとに実装タスクを作成
 3. `ai/board.md` の Current Work を更新
@@ -18,7 +19,8 @@ argument-hint: "<feature> | commit | pr"
 5. 設計完了後、実装へ移行
 
 **TaskCreate時のテンプレート:**
-```
+
+```yaml
 subject: "[Red] <機能名> - テスト作成"
 description: |
   対象: <ファイルパス>
@@ -58,6 +60,7 @@ Task tool を使用:
 ### `/dev commit` - コミット作成
 
 `/commit` スキルを実行:
+
 1. `git diff --staged` を分析
 2. コミット計画を提案
 3. 確認後、コミット実行
@@ -67,6 +70,7 @@ Task tool を使用:
 ### `/dev pr` - PR作成
 
 `/pr` スキルを実行:
+
 1. コミット済みの変更を確認
 2. PRタイトル・本文を提案
 3. 確認後、push + PR作成

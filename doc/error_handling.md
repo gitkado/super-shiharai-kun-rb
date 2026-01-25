@@ -8,7 +8,7 @@
 
 ## アーキテクチャ
 
-```
+```text
 ApplicationController (基底クラス)
   ↓ include
 ErrorHandling (Concern)

@@ -17,7 +17,7 @@
 
 ### 全体構造
 
-```
+```text
 app/
 ├── channels/                         # ActionCable（WebSocket）- 共通基盤のみ
 │   └── application_cable/
@@ -61,18 +61,21 @@ app/
 ### 重要な原則
 
 **app直下（共通基盤・インフラ層）:**
+
 - ✅ 基底クラス（Application*）
 - ✅ 全パッケージで共有する技術的な機能
 - ✅ Rackミドルウェア
 - ❌ ビジネスロジック → `app/packages/` へ
 
 **app/packages/（ビジネスロジック層）:**
+
 - ✅ 全てのドメイン固有のController, Model, Job, Mailer
 - ✅ ビジネスルール、機能実装
 - ✅ Railsの標準構成（MVC）に従う
 - ✅ Fat Model, Skinny Controller
 
 **公開APIの方針:**
+
 - デフォルトは全て非公開（packages内のapp/配下）
 - 他パッケージから利用されるものだけ `app/public/` に配置
 
@@ -93,6 +96,7 @@ graph TD
 ```
 
 **依存の方向性ルール:**
+
 - 各ドメインパッケージはルートパッケージに依存できる
 - 各ドメインパッケージは認証パッケージに依存できる
 - **認証パッケージは他のドメインに依存してはいけない**（Packwerkが強制）
@@ -124,6 +128,7 @@ public_path: app/public
 ```
 
 **重要:**
+
 - `public_path: app/public` がデフォルト（他パッケージからはこのパス内のみアクセス可能）
 - `app/public/` 以外（controllers, models, services等）は全て非公開（private）
 - 他パッケージに公開したいものだけを `app/public/` に配置する

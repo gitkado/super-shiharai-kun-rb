@@ -443,6 +443,7 @@
 ### フェーズ3: マイグレーション作成・実行 ✅ 完了
 
 - [x] **マイグレーション生成**
+
   ```bash
   bin/rails generate migration CreateInvoices
   ```
@@ -452,6 +453,7 @@
 - [x] **マイグレーションファイル編集**
   - ファイル: `db/migrate/20251117111943_create_invoices.rb`
   - 内容:
+
     ```ruby
     class CreateInvoices < ActiveRecord::Migration[7.2]
       def change
@@ -493,6 +495,7 @@
   **実施結果:** 2025-11-17 20:20 完了
 
 - [x] **マイグレーション実行**
+
   ```bash
   # 開発環境
   bin/rails db:migrate
@@ -815,6 +818,7 @@
   - ファイル: `app/controllers/application_controller.rb`
   - **実施結果:** 認証パッケージ側で実装済み
   - 内容:
+
     ```ruby
     class ApplicationController < ActionController::API
       include ErrorHandling
@@ -826,6 +830,7 @@
   - ファイル: `config/routes.rb`
   - **実施結果:** 2026-01-03 完了
   - 追加内容:
+
     ```ruby
     namespace :api do
       namespace :v1 do
@@ -912,6 +917,7 @@
 
 - [x] **コミット:** `test(pack-invoice): InvoicesController リクエストスペックを追加`
   - 内容:
+
     ```ruby
     require "rails_helper"
     require "swagger_helper"
@@ -1353,6 +1359,7 @@
 ### フェーズ8: 統合テスト・品質チェック
 
 - [x] **全テスト実行**
+
   ```bash
   bundle exec rspec
   ```
@@ -1413,6 +1420,7 @@
   **実施結果:** 2026-01-03 完了 - 全APIエンドポイント動作確認済み
 
   **ユーザー登録 & ログイン（JWT取得）:**
+
   ```bash
   # ユーザー登録
   curl -X POST http://localhost:3000/api/v1/auth/register \
@@ -1424,6 +1432,7 @@
   ```
 
   **請求書登録:**
+
   ```bash
   curl -X POST http://localhost:3000/api/v1/invoices \
     -H "Content-Type: application/json" \
@@ -1436,6 +1445,7 @@
   ```
 
   **請求書一覧取得:**
+
   ```bash
   curl -X GET http://localhost:3000/api/v1/invoices \
     -H "Authorization: Bearer $JWT"
@@ -1519,6 +1529,7 @@
 ### 次のステップ（将来対応）
 
 #### 機能拡張
+
 1. 請求書詳細取得API（`GET /api/v1/invoices/:id`）
 2. 請求書更新・削除API
 3. ステータス管理（未払い・支払済み等）
@@ -1528,18 +1539,21 @@
 7. 複合検索（金額範囲、発行日範囲等）
 
 #### リファクタリング（コード内TODO/FIXME対応）
-8. **Serializer導入** - JSON生成を一元化（`invoices_controller.rb:60` TODO）
+
+1. **Serializer導入** - JSON生成を一元化（`invoices_controller.rb:60` TODO）
    - 候補: ActiveModelSerializer, Blueprinter, jbuilder
    - APIエンドポイント増加時のメンテナンスコスト削減
-9. **派生値計算ロジックの整理** - コールバック設計の見直し（`invoice.rb:26` FIXME）
+2. **派生値計算ロジックの整理** - コールバック設計の見直し（`invoice.rb:26` FIXME）
    - セッターオーバーライドから遅延計算への変更を検討
    - dirtyフラグやbefore_saveへの統合
 
 ### ドキュメント更新
+
 - [x] `README.md` に請求書管理機能の説明を追加
 - [x] `CLAUDE.md` に環境変数セクション追加（`INVOICE_FEE_RATE`, `INVOICE_TAX_RATE`）
 
 ### 他パッケージへの影響
+
 - `authentication` パッケージ: `Authenticatable` concernを `ApplicationController` に追加（フェーズ5で実施）
 - 将来の `payment` パッケージ: `invoice` パッケージへの依存が必要
 

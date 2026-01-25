@@ -7,6 +7,7 @@
 **採用技術:** BCrypt + JWT gem 直接利用
 
 当初はRodauth採用を計画していましたが、以下の理由からBCrypt + JWT直接利用に変更しました：
+
 - 本プロジェクトの主目的は請求管理ドメインの実装であり、認証は標準的な実装で十分
 - シンプルさ優先: RailsのFat Model, Skinny Controller方針に従い、保守しやすい構成
 - Rodauth-rails gemは依存関係に残っていますが、現在は直接利用していません（将来の拡張用）
@@ -120,7 +121,7 @@
 
 ## 実装ファイル一覧
 
-```
+```text
 app/packages/authentication/
 ├── package.yml
 ├── app/
