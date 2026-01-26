@@ -56,10 +56,50 @@ if [[ -z "$DIFF" ]]; then
   exit 1
 fi
 
-# レビュープロンプトを構築
-REVIEW_PROMPT="以下のgit diffをレビューしてください。問題点、改善提案、セキュリティ上の懸念があれば指摘してください。
+# feature を特定し、コンテキストを取得
+FEATURE=$(get_current_feature)
+FEATURE_CONTEXT=""
+if [[ -n "$FEATURE" ]]; then
+  FEATURE_CONTEXT=$(get_feature_context "$FEATURE")
+fi
 
-$DIFF"
+# レビュープロンプトを構築
+REVIEW_PROMPT="以下のgit diffをレビューしてください。"
+
+# コンテキストがあれば追加
+if [[ -n "$FEATURE" ]]; then
+  REVIEW_PROMPT+="
+
+## コンテキスト
+Feature: $FEATURE"
+  if [[ -n "$FEATURE_CONTEXT" ]]; then
+    REVIEW_PROMPT+="
+$FEATURE_CONTEXT"
+  fi
+fi
+
+REVIEW_PROMPT+="
+
+## git diff
+\`\`\`diff
+$DIFF
+\`\`\`
+
+## レビュー観点
+1. 要件との整合性（コンテキストがある場合）
+2. 設計方針との一貫性
+3. セキュリティ上の懸念
+4. パフォーマンス影響
+5. テストカバレッジ
+6. コードの可読性・保守性
+
+## 出力形式（必須）
+各指摘に重要度を付与してください:
+- [BLOCKER]: マージ不可。セキュリティ脆弱性、データ破損、本番障害リスク
+- [WARNING]: 要検討。設計違反、パフォーマンス懸念、保守性低下
+- [INFO]: 参考情報。コードスタイル、改善提案、ベストプラクティス
+
+重要度ごとにセクション分けして出力してください。"
 
 # ペインが起動中の場合はそこに送信
 CODEX_PANE=$(get_running_pane)

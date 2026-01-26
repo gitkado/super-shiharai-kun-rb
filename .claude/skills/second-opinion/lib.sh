@@ -360,6 +360,101 @@ clear_session_id() {
 }
 
 # --------------------------------------------------------------------------
+# Feature特定・コンテキスト取得
+# --------------------------------------------------------------------------
+
+# 現在のfeatureを取得（環境変数 → board.md → git diffの優先順位）
+get_current_feature() {
+  local feature=""
+
+  # 1. 環境変数 FEATURE が設定されていればそれを使用
+  if [[ -n "${FEATURE:-}" ]]; then
+    echo "$FEATURE"
+    return 0
+  fi
+
+  # 2. ai/board.md の Current Work から取得
+  if [[ -f "ai/board.md" ]]; then
+    # "## Current Work" セクションから feature: <name> を抽出
+    feature=$(grep -A 5 "^## Current Work" "ai/board.md" 2>/dev/null | \
+              grep -oE "feature:\s*\S+" | head -1 | sed 's/feature:\s*//' || true)
+    if [[ -n "$feature" ]]; then
+      echo "$feature"
+      return 0
+    fi
+    # または "Feature: <name>" 形式
+    feature=$(grep -A 5 "^## Current Work" "ai/board.md" 2>/dev/null | \
+              grep -oE "Feature:\s*\S+" | head -1 | sed 's/Feature:\s*//' || true)
+    if [[ -n "$feature" ]]; then
+      echo "$feature"
+      return 0
+    fi
+  fi
+
+  # 3. git diff のパスから app/packages/<package>/ を抽出
+  local diff_paths=""
+  diff_paths=$(git diff HEAD --name-only 2>/dev/null || git diff --staged --name-only 2>/dev/null || git diff --name-only 2>/dev/null || true)
+  if [[ -n "$diff_paths" ]]; then
+    # app/packages/<package>/ からパッケージ名を抽出
+    feature=$(echo "$diff_paths" | grep -oE "app/packages/[^/]+" | head -1 | sed 's|app/packages/||' || true)
+    if [[ -n "$feature" ]]; then
+      echo "$feature"
+      return 0
+    fi
+  fi
+
+  # 4. feature を特定できなかった場合は空文字を返す
+  return 0
+}
+
+# feature の specs ドキュメントを取得
+get_feature_context() {
+  local feature="$1"
+  local context=""
+
+  if [[ -z "$feature" ]]; then
+    return 0
+  fi
+
+  local specs_dir="ai/specs/$feature"
+
+  # シンボリックリンクチェック
+  validate_safe_path "$specs_dir" || return 0
+
+  if [[ ! -d "$specs_dir" ]]; then
+    return 0
+  fi
+
+  # requirements.md を最優先で読み込み
+  if [[ -f "$specs_dir/requirements.md" ]]; then
+    validate_safe_path "$specs_dir/requirements.md" || true
+    local req_content
+    req_content=$(head -50 "$specs_dir/requirements.md" 2>/dev/null || true)
+    if [[ -n "$req_content" ]]; then
+      context+="
+### 要件（requirements.md）
+$req_content
+"
+    fi
+  fi
+
+  # design.md を読み込み
+  if [[ -f "$specs_dir/design.md" ]]; then
+    validate_safe_path "$specs_dir/design.md" || true
+    local design_content
+    design_content=$(head -80 "$specs_dir/design.md" 2>/dev/null || true)
+    if [[ -n "$design_content" ]]; then
+      context+="
+### 設計（design.md）
+$design_content
+"
+    fi
+  fi
+
+  echo "$context"
+}
+
+# --------------------------------------------------------------------------
 # JSONL出力からの応答抽出
 # --------------------------------------------------------------------------
 

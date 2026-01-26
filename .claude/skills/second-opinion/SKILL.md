@@ -135,11 +135,23 @@ codexを一時的に起動してプロンプトを実行し、結果を取得し
 
 **実行:** `.claude/skills/second-opinion/exec.sh "<prompt>"`
 
-### `/second-opinion review` - git diffレビュー
+### `/second-opinion review` - git diffレビュー（鬼レビュー）
 
 現在のgit diffをcodexに送ってコードレビューを依頼します（ワンショット実行）。
 
 **実行:** `.claude/skills/second-opinion/review.sh`
+
+**特徴:**
+
+- **自動コンテキスト付与**: feature を自動特定し、`ai/specs/<feature>/` の要件・設計ドキュメントを添付
+- **重要度付与**: 各指摘に BLOCKER / WARNING / INFO の重要度を付与
+- **構造化出力**: Claude側が要否判断しやすい形式で出力
+
+**feature 特定の優先順位:**
+
+1. 環境変数 `FEATURE` が設定されている場合
+2. `ai/board.md` の Current Work セクションに feature が記載されている場合
+3. git diff のパスから `app/packages/<package>/` を抽出
 
 ### `/second-opinion design` - 設計相談
 
@@ -323,6 +335,40 @@ CODEX_MODEL="gpt-5.2-codex" .claude/skills/second-opinion/exec.sh "質問"
 
 ---
 
+## 重要度レベル
+
+`review` と `design` コマンドは、各指摘に重要度を付与して出力します。
+
+| レベル | 意味 | Claude側の対応 |
+|--------|------|----------------|
+| **[BLOCKER]** | マージ不可 | 必ず修正が必要。ユーザーに報告し、修正を実施 |
+| **[WARNING]** | 要検討 | リスクを説明し、ユーザーに判断を委ねる |
+| **[INFO]** | 参考情報 | 参考として伝える。対応は任意 |
+
+### BLOCKER の例
+
+- セキュリティ脆弱性（SQLインジェクション、XSSなど）
+- データ破損の可能性
+- 本番障害リスク
+- 設計の根本的な問題
+
+### WARNING の例
+
+- 設計方針との乖離
+- パフォーマンス懸念
+- 保守性の低下
+- テストカバレッジ不足
+
+### INFO の例
+
+- コードスタイルの改善提案
+- ベストプラクティスの紹介
+- 代替アプローチの提案
+
+---
+
 ## アイデア
 
 - **並列作業モード**: 別ペインでcodexに作業させながら、メインのClaudeは別の作業を進められるように、対話形式でcodexを利用できるようにする
+
+- **サブエージェント化によるコンテキスト最適化**: SKILL.md全文がメインコンテキストに読み込まれ、codexレスポンスも全文が会話履歴に残る問題がある。tdd-executor/verifierと同様にTask tool（subagent_type: second-opinion-executor）に委譲し、結果を要約（300-500文字）して返す形式にすることで、コンテキスト消費を90%以上削減できる可能性がある。
