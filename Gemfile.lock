@@ -262,6 +262,9 @@ GEM
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.4)
+    rack-cors (3.0.0)
+      logger
+      rack (>= 3.0.14)
     rack-session (2.1.1)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -456,6 +459,7 @@ DEPENDENCIES
   packwerk-extensions (~> 0.3.0)
   pg (~> 1.6)
   puma (>= 5.0)
+  rack-cors
   rails (~> 7.2.2)
   rails_semantic_logger
   rspec-rails (~> 7.1)
