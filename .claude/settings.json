@@ -40,14 +40,6 @@
       "Bash(touch:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
-      "Bash(.claude/skills/second-opinion/ask.sh:*)",
-      "Bash(.claude/skills/second-opinion/design.sh:*)",
-      "Bash(.claude/skills/second-opinion/exec.sh:*)",
-      "Bash(.claude/skills/second-opinion/lib.sh:*)",
-      "Bash(.claude/skills/second-opinion/review.sh:*)",
-      "Bash(.claude/skills/second-opinion/start.sh:*)",
-      "Bash(.claude/skills/second-opinion/status.sh:*)",
-      "Bash(.claude/skills/second-opinion/stop.sh:*)",
       "Bash(asdf list:*)"
     ],
     "deny": [
@@ -63,7 +55,8 @@
   "model": "claude-opus-4-5",
   "disabledMcpjsonServers": [
     "serena",
-    "playwright"
+    "playwright",
+    "context7"
   ],
   "hooks": {
     "PreToolUse": [
@@ -80,17 +73,9 @@
   },
   "enabledPlugins": {
     "code-simplifier@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
-    "ruby-lsp@local-lsp": true
-  },
-  "extraKnownMarketplaces": {
-    "local-lsp": {
-      "source": {
-        "source": "directory",
-        "path": "./.claude/plugins/lsp"
-      }
-    }
+    "second-opinion@gitkado-cc-marketplace": true,
+    "x-browser@gitkado-cc-marketplace": true
   },
   "plansDirectory": "./plans"
 }
