@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 32" height="32" role="img" aria-label="スーパー支払い君 サービスロゴ">
+  <g fill="#ffffff">
+    <path d="M23,2H9C6.79,2,5,3.79,5,6v20c0,2.21,1.79,4,4,4h14c2.21,0,4-1.79,4-4V6C27,3.79,25.21,2,23,2z M13.5,23 l-5.5-5.5l2.12-2.12l3.38,3.38l8.38-8.38l2.12,2.12L13.5,23z"/>
+  </g>
+
+  <text x="34" y="22" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans JP', sans-serif" font-weight="700" font-size="18" letter-spacing="0.5">スーパー支払い君</text>
+</svg>
