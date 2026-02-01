@@ -48,6 +48,18 @@ dev server URLが不明な場合は、プロジェクトの設定ファイル（
 
 ## 基本ワークフロー
 
+### 0. dev serverの起動確認
+
+ブラウザ確認の前に、dev serverが起動済みか確認する:
+
+```bash
+curl -fsS http://localhost:5173/ > /dev/null 2>&1 && echo "running" || echo "stopped"
+```
+
+- **起動済み（running）** → そのまま利用。**新たに `pnpm dev` を実行しない**
+- **未起動（stopped）** → ユーザーに起動を依頼する（`cd frontend && pnpm dev`）
+  - ユーザーが明示的に許可した場合のみ、自動起動してよい
+
 ### 1. ページを開く
 
 ```bash
@@ -176,4 +188,5 @@ rm <scratchpad>/*.png    # スクリーンショットを削除
 
 - 確認が終わったら必ず `agent-browser close` でブラウザを閉じる
 - **スクリーンショットは確認完了後に削除する**（`rm <scratchpad>/*.png`）
-- dev serverが起動していない場合はユーザーに起動を依頼する
+- dev serverの多重起動禁止: `curl` で起動確認済みの場合、`pnpm dev` を実行しない
+- dev server未起動時は原則ユーザーに起動を依頼する（明示的許可があれば自動起動可）
