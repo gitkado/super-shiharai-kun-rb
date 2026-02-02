@@ -1,6 +1,6 @@
 ---
 name: ds-check
-description: SmartHR Design System準拠チェック。コード解析とブラウザ検証でsmarthr-uiの使い方を確認する。
+description: "ALWAYS use this skill to check SmartHR Design System compliance. smarthr-uiの使い方をコード解析とブラウザ検証で確認する。Trigger words include: DS準拠, デザインシステム, smarthr-ui確認, ds-check."
 argument-hint: "[code|browser|full] [path]"
 ---
 
@@ -20,7 +20,7 @@ argument-hint: "[code|browser|full] [path]"
 | `browser` | ブラウザ視覚検証のみ（dev server必須） |
 | `full`（デフォルト） | code + browser |
 
-引数にパスが指定された場合はそのパスのみチェック。省略時は `frontend/src/` 全体。
+引数にパスが指定された場合はそのパスのみチェック。省略時は `**/*.tsx` で自動検出。
 
 ## 実行方法
 
@@ -29,7 +29,7 @@ argument-hint: "[code|browser|full] [path]"
 ```text
 Task tool (subagent_type: ds-checker) に以下を渡す:
 - mode: code / browser / full
-- path: チェック対象パス（デフォルト: frontend/src/）
+- path: チェック対象パス（省略時は自動検出）
 ```
 
 ## レポート形式

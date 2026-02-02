@@ -75,7 +75,10 @@
     "code-simplifier@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "second-opinion@gitkado-cc-marketplace": true,
-    "x-browser@gitkado-cc-marketplace": true
+    "x-browser@gitkado-cc-marketplace": true,
+    "create-pr@gitkado-cc-marketplace": true,
+    "browser-dev@gitkado-cc-marketplace": true,
+    "skill-create@gitkado-cc-marketplace": true
   },
   "plansDirectory": "./plans"
 }
