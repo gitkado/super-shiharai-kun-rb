@@ -52,7 +52,7 @@
     ],
     "defaultMode": "plan"
   },
-  "model": "claude-opus-4-5",
+  "model": "claude-opus-4-6",
   "disabledMcpjsonServers": [
     "serena",
     "playwright",
@@ -80,5 +80,6 @@
     "browser-dev@gitkado-cc-marketplace": true,
     "skill-create@gitkado-cc-marketplace": true
   },
-  "plansDirectory": "./plans"
+  "plansDirectory": "./plans",
+  "includeCoAuthoredBy": false
 }
