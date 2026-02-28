@@ -59,7 +59,7 @@ Task tool を使用:
 
 ### `/dev commit` - コミット作成
 
-`/commit` スキルを実行:
+`/commit-diff` スキルを実行:
 
 1. `git diff --staged` を分析
 2. コミット計画を提案
@@ -94,5 +94,5 @@ Task tool を使用:
 | スキル | 役割 |
 |--------|------|
 | `/design` | 設計フェーズ（要件定義・設計判断・タスク分解） |
-| `/commit` | コミット計画・実行 |
+| `/commit-diff` | コミット計画・実行 |
 | `/pr` | PR作成（push確認 + gh pr create） |

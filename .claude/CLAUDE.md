@@ -15,7 +15,7 @@ Ruby on Rails 7.2の企業向け支払い管理システム（モジュラーモ
 | 新機能開発 | `/dev <feature>` |
 | 実装（TDD） | `/dev` |
 | 検証 | `/verify full` |
-| コミット | `/dev commit` |
+| コミット | `/commit-diff` |
 | PR作成 | `/dev pr` |
 
 ## 開発コマンド（抜粋）
