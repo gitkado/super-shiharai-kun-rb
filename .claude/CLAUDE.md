@@ -2,6 +2,23 @@
 
 ユーザーには日本語で応答してください。
 
+## コア原則
+
+- 動作を証明（テスト通過）するまでタスクを完了とマークしない
+- 「シニアエンジニアがレビューして承認するか？」を自問する
+- 一時的な修正（ワークアラウンド）より根本解決を優先
+- 変更は必要最小限に留める（影響範囲の最小化）
+- 不明点はユーザーに確認し、推測で進めない
+- セッション開始時に `ai/lessons.md` をレビューし、過去の教訓を確認する
+
+## 禁止事項
+
+- `app/` 直下にビジネスロジックを書かない（→ `app/packages/` へ）
+- Rodauthを新規導入しない（BCrypt+JWTで実装）
+- パッケージ間の循環依存を作らない
+- テストなしでタスクを完了にしない
+- 他パッケージの非公開クラスを直接参照しない（`app/public/` 経由のみ）
+
 ## 概要
 
 Ruby on Rails 7.2の企業向け支払い管理システム（モジュラーモノリス）。
@@ -37,21 +54,10 @@ bundle exec brakeman -q              # セキュリティ
 | `.claude/skills/` | ワークフロー（/dev, /verify等） |
 | `.claude/agents/` | 自律エージェント |
 
-### rules/一覧
-
-| ファイル | 内容 |
-|----------|------|
-| `project-overview.md` | 技術スタック・認証方針 |
-| `ai-workflow.md` | AI開発ディレクトリ運用 |
-| `architecture.md` | モジュラーモノリス・Packwerk |
-| `development-commands.md` | 開発・テスト・品質チェック |
-| `technical-features.md` | ログ・エラーハンドリング |
-| `rubocop-config.md` | RuboCop設定 |
-| `utility-commands.md` | DB・ユーティリティ |
-
 ## 参考ドキュメント
 
 - `ai/README.md` - AI開発ガイド
+- `ai/lessons.md` - 過去の教訓・改善ルール
 - `doc/modular_monolith.md` - アーキテクチャ詳細
 - `doc/packwerk_guide.md` - Packwerk使用方法
 - `doc/error_handling.md` - エラーハンドリングの詳細
